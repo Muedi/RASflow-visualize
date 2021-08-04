@@ -108,3 +108,96 @@ subject.all <- meta.data$subject
   ## specify the control group
   dds$group <- relevel(dds$group, ref = control)
   colnames(dds) <- dds@colData$samples
+  
+  dds <- DESeq(dds)
+  res <- results(dds, alpha=0.05)
+  res <- res[order(res$pvalue),]
+  summary(res)
+  #packages for annotation
+  library("genefilter")
+  library("AnnotationDbi")
+  library("org.Mm.eg.db")
+
+  # use mapids 
+  res$symbol = mapIds(org.Mm.eg.db,
+                     keys=row.names(res), 
+                     column="SYMBOL",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+res$entrez = mapIds(org.Mm.eg.db,
+                     keys=row.names(res), 
+                     column="ENTREZID",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+res$name =   mapIds(org.Mm.eg.db,
+                     keys=row.names(res), 
+                     column="GENENAME",
+                     keytype="ENSEMBL",
+                     multiVals="first")
+
+# packages for pathways:
+# library(pathview)
+# library(gage)
+# library(gageData)
+# data(kegg.sets.mm)
+# data(sigmet.idx.mm)
+# kegg.sets.mm = kegg.sets.mm[sigmet.idx.mm]
+# head(kegg.sets.mm, 3)
+# # gage required fold changes vector named with entrez ids.
+# foldchanges = res$log2FoldChange
+# names(foldchanges) = res$entrez
+# head(foldchanges)
+# # the actual pathway analysis
+# # same.dir =TRUE gives us pathways in both up- and down-regulated directions
+# keggres = gage(foldchanges, gsets=kegg.sets.mm, same.dir=TRUE)
+# # Get the upregulated (greater) pathways
+# keggrespathways = data.frame(id=rownames(keggres$greater), keggres$greater) %>% 
+#   tibble::as_tibble() %>% 
+#   filter(row_number()<=5) %>% 
+#   .$id %>% 
+#   as.character()
+
+# # Get the IDs.
+# keggresids = substr(keggrespathways, start=1, stop=8)
+# # plot pathways as graphs
+# # Define plotting function for applying later
+# #plot_pathway = function(pid) pathview(gene.data=foldchanges, kegg.dir=paste(out.path,"/pathways", sep=''), pathway.id=pid, species="mmu", new.signature=FALSE)
+
+# dir.create(file.path(paste(out.path,"/pathways", sep='')), showWarnings = FALSE)
+# normal_wd <- getwd()
+# setwd(file.path(paste(out.path,"/pathways", sep='')))
+# # plot multiple pathways (plots saved to disk and returns a throwaway list object)
+# tmp = sapply(keggresids, function(pid) pathview(gene.data=foldchanges,  pathway.id=pid, species="mmu"))
+# setwd(normal_wd)
+
+# ### GO gene ontology enrichemnt
+# data(go.sets.mm)
+# data(go.subs.mm)
+# gobpsets = go.sets.mm[go.subs.mm$BP]
+# gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+# lapply(gobpres, head)
+
+# pathway analysis with clusterprofiler
+library(clusterProfiler)
+# similar to gage requires fold changes vector named with ids.
+geneList = res$log2FoldChange
+names(geneList) = rownames(res)
+# but it additionally needs to be sorted
+geneList <- sort(geneList, decreasing = TRUE)
+head(geneList)
+
+gene <- names(geneList) #[abs(geneList) > 2]
+# gene.df <- bitr(gene, fromType = "ENSEMBL",
+#         toType = c("ENTREZID", "SYMBOL"),
+#         OrgDb = org.Mm.eg.db)
+# head(gene.df)
+
+ego <- enrichGO(gene          = gene,
+                OrgDb         = org.Mm.eg.db,
+                keyType       = 'ENSEMBL',
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+                readable      = TRUE)
+head(ego, 10)
