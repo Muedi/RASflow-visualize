@@ -1,7 +1,7 @@
 # Please check the parameters, and adjust them according to your circumstance
 
 # Project name
-PROJECT: neutrophiles_old
+PROJECT: neutrophiles
 # older data neutrophiles_old
 
 # ================== Control of the workflow ==================
@@ -27,7 +27,7 @@ VISUALIZE: yes  # "yes" or "no"
 KEY: 
 
 ## the path to fastq files
-READSPATH: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/GSE110865
+READSPATH: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/NGS_048_370_Hanna_mRNA
 # older data: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/GSE110865
 
 ## the meta file describing the experiment settings
@@ -78,11 +78,11 @@ alignmentQC: no  # "yes" or "no" to specify whether you want to do alignment QC
 DEATOOL: DESeq2  # "edgeR" or "DESeq2"? DESeq2 is recommended for transcriptome-based and DEA
 
 ## Is your experiment designed in a pair-wise way?
-PAIR: TRUE  # Is this a pair test or not? ("TRUE" or "FALSE")
+PAIR: FALSE  # Is this a pair test or not? ("TRUE" or "FALSE")
 
 ## the comparison(s) you want to do. If multiple comparisons, specify each pair (CONTROL & TREAT) in order respectively
-CONTROL: ["WT"]
-TREAT: ["KO"]
+CONTROL: ["WT", "WT", "WT", "KO-PU", "KO-PU-cellline"]
+TREAT: ["KO-PU", "KO-PU-cellline", "KO-PU+KO-Ets2", "KO-PU+KO-Ets2", "KO-PU+KO-Ets2"]
 ## length of 'CONTROL' should agree with that of 'TREAT'
 ## what you fill in there should agree with the "group" column in metadata.tsv
 

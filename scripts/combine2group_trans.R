@@ -48,7 +48,7 @@ if (num.control != num.treat) {
 }
 
 # extract the metadata
-meta.data <- read.table(meta.file, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
+meta.data <- read.table(meta.file, header = TRUE, sep = '\t', stringsAsFactors = FALSE, fill = TRUE)
 samples <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject

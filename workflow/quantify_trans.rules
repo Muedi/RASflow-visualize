@@ -47,7 +47,7 @@ rule indexTrans:
     output:
         index = directory(intermediate_path + "/transcripts_index")
     shell:
-        "salmon index -t {input} -i {output} --type quasi -k 31 -p {config[NCORE]}"
+        "salmon index -t {input} -i {output} --type quasi -k 31 -p {config[NCORE]} --gencode"
 
 if end == "pair":
     rule quantify:

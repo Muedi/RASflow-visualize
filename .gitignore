@@ -5,6 +5,13 @@
 *.swp
 .Rhistory
 .DS_Store
+logs/
 
 # ignore the following folders
 data/output/
+data/ref/
+output/
+*.png
+degs-*.csv
+test.csv
+Rplots.pdf

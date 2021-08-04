@@ -4,8 +4,8 @@ library(yaml)
 library(hash)
 library(mygene)
 library(EnhancedVolcano)
-library(plotscale)
 
+library(plotscale)
 # ====================== load parameters in config file ======================
 
 # passing the params from command line
@@ -13,6 +13,7 @@ args <- commandArgs(TRUE)
 norm.path <- args[1]
 dea.path <- args[2]
 out.path <- args[3]
+
 
 # load the config file
 if (length(args) > 3) {  # this script is used in  visualize_test.rules
