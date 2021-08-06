@@ -186,18 +186,31 @@ names(geneList) = rownames(res)
 geneList <- sort(geneList, decreasing = TRUE)
 head(geneList)
 
-gene <- names(geneList) #[abs(geneList) > 2]
+gene <- names(geneList) #[abs(geneList) > 2] )
+degs <- names(geneList[abs(geneList) > 2] )
 # gene.df <- bitr(gene, fromType = "ENSEMBL",
 #         toType = c("ENTREZID", "SYMBOL"),
 #         OrgDb = org.Mm.eg.db)
 # head(gene.df)
 
-ego <- enrichGO(gene          = gene,
+ego <- enrichGO(gene          = degs,
+                universe      = gene,
                 OrgDb         = org.Mm.eg.db,
                 keyType       = 'ENSEMBL',
-                ont           = "CC",
+                ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
                 pAdjustMethod = "BH",
-                pvalueCutoff  = 0.01,
+                pvalueCutoff  = 0.05,
                 qvalueCutoff  = 0.05,
                 readable      = TRUE)
 head(ego, 10)
+
+ego_gsea <- gseGO(geneList   = geneList,
+              OrgDb        = org.Mm.eg.db,
+              keyType       = 'ENSEMBL',
+              ont          = "MF",
+              nPerm        = 100,
+              minGSSize    = 10,
+              maxGSSize    = 200,
+              pvalueCutoff = 0.1,
+              verbose      = FALSE)
+head(ego_gsea, 10)
