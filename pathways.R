@@ -204,13 +204,12 @@ ego <- enrichGO(gene          = degs,
                 readable      = TRUE)
 head(ego, 10)
 
-ego_gsea <- gseGO(geneList   = geneList,
-              OrgDb        = org.Mm.eg.db,
-              keyType       = 'ENSEMBL',
-              ont          = "MF",
-              nPerm        = 100,
-              minGSSize    = 10,
-              maxGSSize    = 200,
-              pvalueCutoff = 0.1,
-              verbose      = FALSE)
-head(ego_gsea, 10)
+
+ggo <- groupGO(gene     = degs,
+               OrgDb    = org.Mm.eg.db,
+                keyType       = 'ENSEMBL',
+
+               ont      = "MF",
+               level    = 4,
+               readable = TRUE)
+head(ggo, 10)
