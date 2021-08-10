@@ -71,17 +71,36 @@ convert.id2symbol <- function(gene.id) {
 }
 
 
+
 ### load salomns quants as deseq2 object.
 ### the original quant files from Salmon
 meta.data <- read.csv(meta.file, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 samples.all <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject
+# get complete counts
+samples <- factor(samples.all) 
+  ### import quantification as txi
+  # files <- file.path(quant.path, samples, "quant.sf")
+  # names(files) <- samples
+  # load tx2gene
+  output.path <- file.path(yaml.file$FINALOUTPUT, project, "trans/dea")
+  load(file.path(output.path, "countGroup", 'tx2gene.RData'))
+  # noVersion because ensemble is used 
+  files.noVersion <- file.path(quant.path, samples, "quant_noVersion.sf")
+  names(files.noVersion) <- samples
+  # load data fro salom, gene level
+  txi_all <- tximport(files.noVersion, type = "salmon", tx2gene = tx2gene, countsFromAbundance = "no")
 
 
 all.dea.tibble <- tibble()
+joined_table <- as.data.frame(txi_all$counts)
+joined_table <- tibble(rownames_to_column(joined_table, "ensembl"))   
+# filter rows, with only counts below 2
+joined_table <- joined_table %>% filter_at(vars(-ensembl), any_vars(. > 2))
+
 ## create the DESeqDataSet
-# subset samples
+# for subset samples (comparisons)
 for (i in 1:length(controls)) {
 
   control <- controls[i]
@@ -272,29 +291,28 @@ for (i in 1:length(controls)) {
   tibb.dea <- as_tibble(resOrdered , rownames="ensembl")
   tibb.dea <- tibb.dea[!is.na(tibb.dea$padj),]
   tibb.dea <- tibb.dea[tibb.dea$padj < 0.05,]
-  tibb.dea <- tibb.dea[abs(tibb.dea$log2FoldChange) > 2,]
-  tibb.dea <- tibb.dea %>% rename_with(~ paste(., control, treat, sep="_"), -"symbol")
-  tibb.dea <- tibb.dea %>% column_to_rownames("symbol")
+  # tibb.dea <- tibb.dea[abs(tibb.dea$log2FoldChange) > 2,]
+  to_join <- tibb.dea %>% dplyr::select("ensembl", "log2FoldChange", "padj")
+  to_join <- to_join %>% mutate("lfc>2" = as.numeric(abs(log2FoldChange)>2))
+  to_join <- to_join %>% rename_with(~ paste(., control, treat, sep="_"), -"ensembl")
+  #tibb.dea <- tibb.dea %>% column_to_rownames("symbol")
 
-  colnames(tibb.dea)
-  if (is_empty(all.dea.tibble)) {
-    all.dea.tibble <- tibb.dea
-    # all.dea.tibble <- all.dea.tibble %>% rename_with(~ paste(., control, treat, sep="_"), -"symbol")
-    }
-  else {
-    all.dea.tibble  <- all.dea.tibble %>%
-    full_join(tibb.dea, by = "symbol")
-  }
-  
+  # colnames(tibb.dea)
+  # if (is_empty(all.dea.tibble)) {
+  #   all.dea.tibble <- tibb.dea
+  #   # all.dea.tibble <- all.dea.tibble %>% rename_with(~ paste(., control, treat, sep="_"), -"symbol")
+  #   }
+  # else {
+  #   all.dea.tibble  <- all.dea.tibble %>%
+  #   full_join(tibb.dea, by = "symbol")
+  # }
+  joined_table <- joined_table %>%
+      full_join(to_join, by = "ensembl")
   
   # plot fold changes in genomic space
   # takes quite long
   # library(apeglm)
   # resGR <- lfcShrink(dds, coef=c("groupKO.PU"), type="apeglm", format="GRanges")
 }
-all.dea.tibble <- all.dea.tibble %>% column_to_rownames("symbol")
-write.csv(all.dea.tibble, file = "degs-padj0.05-lfc2-all-comparisons.csv")
 
-write.csv(all.dea.tibble[all.dea.tibble$symbol %in% c("Arfip1", "Gcat", "Lilrb4a", "Ptp4a1", "Stfa2", "Taf9", "Tmem217"),], "text.csv")
-
-
+write.table(joined_table, file=file.path(out.path, "master.table.csv"), sep=",", row.names=F)
