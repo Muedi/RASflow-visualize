@@ -23,7 +23,7 @@ controls <- yaml.file$CONTROL  # all groups used as control
 treats <- yaml.file$TREAT  # all groups used as treat, should correspond to control
 filter.need <- yaml.file$FILTER$yesOrNo
 pair.test <- yaml.file$PAIR
-meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_copy.tsv"
+meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_47removed.tsv"
 ENSEMBL <- yaml.file$ENSEMBL
 dataset <- yaml.file$EnsemblDataSet
 dea.path <- file.path(yaml.file$FINALOUTPUT, project, "trans/dea")
@@ -79,8 +79,8 @@ samples.all <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject
 
-  control <- controls[1]
-  treat <- treats[1]
+  control <- controls[5] # KO-PU-Cellline
+  treat <- treats[5] # KO-PU+KO-Ets2
   samples <- factor(samples.all[c(which(group.all == control), which(group.all == treat))]) 
   ### import quantification as txi
   # files <- file.path(quant.path, samples, "quant.sf")
@@ -213,3 +213,14 @@ ggo <- groupGO(gene     = degs,
                level    = 4,
                readable = TRUE)
 head(ggo, 10)
+
+
+
+
+# add the proteomics data of the old project. 
+# check how data is comparable to the new knockout (cellline and double KO)
+# read protein data
+library(openxlsx)
+old_expe_expression <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1)
+diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
+pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
