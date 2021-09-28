@@ -221,6 +221,37 @@ head(ggo, 10)
 # check how data is comparable to the new knockout (cellline and double KO)
 # read protein data
 library(openxlsx)
-old_expe_expression <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1)
+old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
 diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
 pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
+
+# gsea for Clusters
+library(fgsea)
+# get list of clusters and genes, to use as pathways for fgsea
+clust_genes <- old_expression_clusters[c("Cluster", "Name")]
+clust_genes$entrez = mapIds(org.Mm.eg.db,
+                     keys=clust_genes$Name, 
+                     column="ENTREZID",
+                     keytype="SYMBOL",
+                     multiVals="first")
+
+clusters <-unique(clust_genes[["Cluster"]]) 
+clust_pathways_symbols <- list(
+  clust_genes[clust_genes$Cluster == clusters[1],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[2],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[3],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[4],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[5],"Name"]
+)
+clust_genes <- clust_genes[!is.na(clust_genes$entrez),]
+clust_pathways_entrez <- list(
+  clust_genes[clust_genes$Cluster == clusters[1],"entrez"],
+  clust_genes[clust_genes$Cluster == clusters[2],"entrez"],
+  clust_genes[clust_genes$Cluster == clusters[3],"entrez"],
+  clust_genes[clust_genes$Cluster == clusters[4],"entrez"],
+  clust_genes[clust_genes$Cluster == clusters[5],"entrez"]
+)
+
+
+names(clust_pathways) <- clusters
+
