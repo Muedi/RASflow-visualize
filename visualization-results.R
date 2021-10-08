@@ -544,60 +544,6 @@ for (i in 1:length(controls)) {
   ggsave(filename = file.path(out.path, paste('volcano_plot_', control, '_', treat, '.png', sep = '')), width=7, height=7)
   #as.pdf(volcano, width = 9, height = 6, scaled = TRUE, file = file.path(out.path, paste('volcano_plot_', name.control, '_', name.treat, '.png', sep = '')))
 
-  # count plot pu.1
-  pu.1 <- rownames(res[res$symbol == "Spi1",] )
-  # plot <- plotCounts(dds, gene = pu.1 , intgroup=c("group", "samples"), returnData=T)
-  # if ( plyr::empty(plot_spi1)   ) {
-  #   plot_spi1 <- plot
-  # } else {
-  #   plot_spi1 <- plot_spi1 %>%
-  #     bind_rows(plot)
-  # }
-  # ggplot(plot, aes(x=group, y=count, color=samples)) +
-  #   scale_y_log10() +  geom_beeswarm(size = 3, cex = 3) + ggtitle("Countplot: Spi1")
-  # ggsave(filename = file.path(out.path, paste('countplot_PU.1_', control, '_', treat, '.png', sep = '')))
-  
-
-  # count plot ets2
-  ets2 <- rownames(res[res$symbol == "Ets2",] )
-  # plot <- plotCounts(dds, gene = ets2, intgroup=c("group", "samples"), returnData=T)
-  # if ( plyr::empty(plot_ets2)   ) {
-  #   plot_ets2 <- plot
-  # } else {
-  #   plot_ets2 <- plot_ets2 %>%
-  #     bind_rows(plot)
-  # }
-  # ggplot(plot, aes(x=group, y=count, color=samples)) +
-  #   scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: Ets2")
-  # ggsave(filename = file.path(out.path, paste('countplot_Ets2_', control, '_', treat, '.png', sep = '')))
-
-  # count plot junb
-  Junb <- rownames(res[res$symbol == "Junb",] )
-  # plot <- plotCounts(dds, gene = Junb, intgroup=c("group", "samples"), returnData=T)
-  # if ( plyr::empty(plot_junb)   ) {
-  #   plot_junb <- plot
-  # } else {
-  #   plot_junb <- plot_junb %>%
-  #     bind_rows(plot)
-  # }
-  # ggplot(plot, aes(x=group, y=count, color=samples)) +
-  #   scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: Junb")
-  # ggsave(filename = file.path(out.path, paste('countplot_Junb_', control, '_', treat, '.png', sep = '')))
-
-  # count ccl3
-  Ccl3 <- rownames(res[res$symbol == "Ccl3",] )
-  # plot <- plotCounts(dds, gene = Ccl3, intgroup=c("group", "samples"), returnData=T)
-  # if ( plyr::empty(plot_ccl3)   ) {
-  #   plot_ccl3 <- plot
-  # } else {
-  #   plot_ccl3 <- plot_ccl3 %>%
-  #     bind_rows(plot)
-  # }
-  # ggplot(plot, aes(x=group, y=count, color=samples)) +
-  #   scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: Ccl3")
-  # ggsave(filename = file.path(out.path, paste('countplot_Ccl3_', control, '_', treat, '.png', sep = '')))
-  
-
   # ordered after pval
   resOrdered <- res[order(res$padj),]
   head(resOrdered)
@@ -808,47 +754,46 @@ clusteres_wt_combis <- cutree(wt_clust$tree_row, k = 6)
 
 # Venn diagramm of old an New clusters? Dot plot better? 
 
+# function for countplots
+save_combined_countplots <- function(tpm, sym) {
+  countplot <- tpm[tpm$symbol == sym,] %>% dplyr::select(-ensembl, -symbol)
+  # countplot <- countplot + 0.00001
+  countplot <- countplot %>% rotate_df() %>% dplyr::rename(count = V1) %>% rownames_to_column("sample")
+  countplot <- countplot %>% left_join(meta.data[c("sample", "group")], by="sample")
 
-ets2_plot <- tpm[tpm$ensembl == ets2,] %>% dplyr::select(-ensembl, -symbol)
-ets2_plot <- ets2_plot %>% rotate_df() %>% dplyr::rename(count = V1) %>% rownames_to_column("sample")
-ets2_plot <- ets2_plot %>% left_join(meta.data[c("sample", "group")], by="sample")
+  # combined countplots
+  ggplot(countplot, aes(x=group, y=count, color=sample)) +
+      #scale_y_log10() +  
+      geom_beeswarm(size = 3,cex = 3) + ggtitle(paste0("Countplot: ", sym)) + theme(axis.text.x = element_text(angle=45, hjust=1))
+  ggsave(filename = file.path(out.path, paste('countplot_', sym, '_all_samples_lsTPM', '.png', sep = '')))
+}
 
-# combined countplots
-ggplot(ets2_plot, aes(x=group, y=count, color=sample)) +
-    scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: Ets2") + theme(axis.text.x = element_text(angle=45, hjust=1))
-  ggsave(filename = file.path(out.path, paste('countplot_Ets2_all_samples_scaled', '.png', sep = '')))
-
-  
-ccl3_plot <- tpm[tpm$ensembl == Ccl3,] %>% dplyr::select(-ensembl, -symbol)
-ccl3_plot <- ccl3_plot %>% rotate_df() %>% dplyr::rename(count = V1) %>% rownames_to_column("sample")
-ccl3_plot <- ccl3_plot %>% left_join(meta.data[c("sample", "group")], by="sample")
-
-# combined countplots
-ggplot(ccl3_plot, aes(x=group, y=count, color=sample)) +
-    scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: Ccl3") + theme(axis.text.x = element_text(angle=45, hjust=1))
-  ggsave(filename = file.path(out.path, paste('countplot_ccl3_all_samples_scaled', '.png', sep = '')))
-
-
-junb_plot <- tpm[tpm$ensembl == Junb,] %>% dplyr::select(-ensembl, -symbol)
-junb_plot <- junb_plot %>% rotate_df() %>% dplyr::rename(count = V1) %>% rownames_to_column("sample")
-junb_plot <- junb_plot %>% left_join(meta.data[c("sample", "group")], by="sample")
-
-# combined countplots
-ggplot(junb_plot, aes(x=group, y=count, color=sample)) +
-    scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: Junb") + theme(axis.text.x = element_text(angle=45, hjust=1))
-  ggsave(filename = file.path(out.path, paste('countplot_Junb_all_samples_scaled', '.png', sep = '')))
-
-
-Spi1_plot <- tpm[tpm$ensembl == pu.1,] %>% dplyr::select(-ensembl, -symbol)
-Spi1_plot <- Spi1_plot %>% rotate_df() %>% dplyr::rename(count = V1) %>% rownames_to_column("sample")
-Spi1_plot <- Spi1_plot %>% left_join(meta.data[c("sample", "group")], by="sample")
-
-# combined countplots
-ggplot(Spi1_plot, aes(x=group, y=count, color=sample)) +
-    scale_y_log10() +  geom_beeswarm(size = 3,cex = 3) + ggtitle("Countplot: PU.1/Spi1") + theme(axis.text.x = element_text(angle=45, hjust=1))
-  ggsave(filename = file.path(out.path, paste('countplot_PU.1_all_samples_scaled', '.png', sep = '')))
-
-
-
-
+# Ets2
+save_combined_countplots(tpm, "Ets2")
+# Ccl3
+save_combined_countplots(tpm, "Ccl3")
+# Junb
+save_combined_countplots(tpm, "Junb")
+# pu.1
+save_combined_countplots(tpm, "Spi1")
+# Cxcl3
+save_combined_countplots(tpm, "Cxcl3")
+# Csf1
+save_combined_countplots(tpm, "Csf1")
+# Trib1
+save_combined_countplots(tpm, "Trib1")
+# Spp1
+save_combined_countplots(tpm, "Spp1")
+# Gpr68
+save_combined_countplots(tpm, "Gpr68")
+# Thbs1
+save_combined_countplots(tpm, "Thbs1")
+# Cd63
+save_combined_countplots(tpm, "Cd63")
+# C3
+save_combined_countplots(tpm, "C3")
+# Slpi
+save_combined_countplots(tpm, "Slpi")
+# S100a4
+save_combined_countplots(tpm, "S100a4")
 
