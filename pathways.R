@@ -6,6 +6,7 @@ library(biomaRt)
 library(tximport)
 library(mygene)
 library(hash)
+library(data.table)                 
 
 norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/countGroup"
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/DEA/gene-level"
@@ -79,8 +80,10 @@ samples.all <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject
 
-  control <- controls[5] # KO-PU-Cellline
-  treat <- treats[5] # KO-PU+KO-Ets2
+for (i in 1:length(controls)) {
+
+  control <- controls[i] # KO-PU-Cellline
+  treat <- treats[i] # KO-PU+KO-Ets2
   samples <- factor(samples.all[c(which(group.all == control), which(group.all == treat))]) 
   ### import quantification as txi
   # files <- file.path(quant.path, samples, "quant.sf")
@@ -124,134 +127,148 @@ subject.all <- meta.data$subject
                      column="SYMBOL",
                      keytype="ENSEMBL",
                      multiVals="first")
-res$entrez = mapIds(org.Mm.eg.db,
-                     keys=row.names(res), 
-                     column="ENTREZID",
-                     keytype="ENSEMBL",
-                     multiVals="first")
-res$name =   mapIds(org.Mm.eg.db,
-                     keys=row.names(res), 
-                     column="GENENAME",
-                     keytype="ENSEMBL",
-                     multiVals="first")
+  res$entrez = mapIds(org.Mm.eg.db,
+                      keys=row.names(res), 
+                      column="ENTREZID",
+                      keytype="ENSEMBL",
+                      multiVals="first")
+  res$name =   mapIds(org.Mm.eg.db,
+                      keys=row.names(res), 
+                      column="GENENAME",
+                      keytype="ENSEMBL",
+                      multiVals="first")
 
-# packages for pathways:
-# library(pathview)
-# library(gage)
-# library(gageData)
-# data(kegg.sets.mm)
-# data(sigmet.idx.mm)
-# kegg.sets.mm = kegg.sets.mm[sigmet.idx.mm]
-# head(kegg.sets.mm, 3)
-# # gage required fold changes vector named with entrez ids.
-# foldchanges = res$log2FoldChange
-# names(foldchanges) = res$entrez
-# head(foldchanges)
-# # the actual pathway analysis
-# # same.dir =TRUE gives us pathways in both up- and down-regulated directions
-# keggres = gage(foldchanges, gsets=kegg.sets.mm, same.dir=TRUE)
-# # Get the upregulated (greater) pathways
-# keggrespathways = data.frame(id=rownames(keggres$greater), keggres$greater) %>% 
-#   tibble::as_tibble() %>% 
-#   filter(row_number()<=5) %>% 
-#   .$id %>% 
-#   as.character()
+  # packages for pathways:
+  # library(pathview)
+  # library(gage)
+  # library(gageData)
+  # data(kegg.sets.mm)
+  # data(sigmet.idx.mm)
+  # kegg.sets.mm = kegg.sets.mm[sigmet.idx.mm]
+  # head(kegg.sets.mm, 3)
+  # # gage required fold changes vector named with entrez ids.
+  # foldchanges = res$log2FoldChange
+  # names(foldchanges) = res$entrez
+  # head(foldchanges)
+  # # the actual pathway analysis
+  # # same.dir =TRUE gives us pathways in both up- and down-regulated directions
+  # keggres = gage(foldchanges, gsets=kegg.sets.mm, same.dir=TRUE)
+  # # Get the upregulated (greater) pathways
+  # keggrespathways = data.frame(id=rownames(keggres$greater), keggres$greater) %>% 
+  #   tibble::as_tibble() %>% 
+  #   filter(row_number()<=5) %>% 
+  #   .$id %>% 
+  #   as.character()
 
-# # Get the IDs.
-# keggresids = substr(keggrespathways, start=1, stop=8)
-# # plot pathways as graphs
-# # Define plotting function for applying later
-# #plot_pathway = function(pid) pathview(gene.data=foldchanges, kegg.dir=paste(out.path,"/pathways", sep=''), pathway.id=pid, species="mmu", new.signature=FALSE)
+  # # Get the IDs.
+  # keggresids = substr(keggrespathways, start=1, stop=8)
+  # # plot pathways as graphs
+  # # Define plotting function for applying later
+  # #plot_pathway = function(pid) pathview(gene.data=foldchanges, kegg.dir=paste(out.path,"/pathways", sep=''), pathway.id=pid, species="mmu", new.signature=FALSE)
 
-# dir.create(file.path(paste(out.path,"/pathways", sep='')), showWarnings = FALSE)
-# normal_wd <- getwd()
-# setwd(file.path(paste(out.path,"/pathways", sep='')))
-# # plot multiple pathways (plots saved to disk and returns a throwaway list object)
-# tmp = sapply(keggresids, function(pid) pathview(gene.data=foldchanges,  pathway.id=pid, species="mmu"))
-# setwd(normal_wd)
+  # dir.create(file.path(paste(out.path,"/pathways", sep='')), showWarnings = FALSE)
+  # normal_wd <- getwd()
+  # setwd(file.path(paste(out.path,"/pathways", sep='')))
+  # # plot multiple pathways (plots saved to disk and returns a throwaway list object)
+  # tmp = sapply(keggresids, function(pid) pathview(gene.data=foldchanges,  pathway.id=pid, species="mmu"))
+  # setwd(normal_wd)
 
-# ### GO gene ontology enrichemnt
-# data(go.sets.mm)
-# data(go.subs.mm)
-# gobpsets = go.sets.mm[go.subs.mm$BP]
-# gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
-# lapply(gobpres, head)
+  # ### GO gene ontology enrichemnt
+  # data(go.sets.mm)
+  # data(go.subs.mm)
+  # gobpsets = go.sets.mm[go.subs.mm$BP]
+  # gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
+  # lapply(gobpres, head)
 
-# pathway analysis with clusterprofiler
-library(clusterProfiler)
-# similar to gage requires fold changes vector named with ids.
-geneList = res$log2FoldChange
-names(geneList) = rownames(res)
-# but it additionally needs to be sorted
-geneList <- sort(geneList, decreasing = TRUE)
-head(geneList)
+  # pathway analysis with clusterprofiler
+  library(clusterProfiler)
+  # similar to gage requires fold changes vector named with ids.
+  geneList = res$log2FoldChange
+  names(geneList) = rownames(res)
+  # but it additionally needs to be sorted
+  geneList <- sort(geneList, decreasing = TRUE)
+  head(geneList)
 
-gene <- names(geneList) #[abs(geneList) > 2] )
-degs <- names(geneList[abs(geneList) > 2] )
-# gene.df <- bitr(gene, fromType = "ENSEMBL",
-#         toType = c("ENTREZID", "SYMBOL"),
-#         OrgDb = org.Mm.eg.db)
-# head(gene.df)
+  gene <- names(geneList) #[abs(geneList) > 2] )
+  degs <- names(geneList[abs(geneList) > 2] )
+  # gene.df <- bitr(gene, fromType = "ENSEMBL",
+  #         toType = c("ENTREZID", "SYMBOL"),
+  #         OrgDb = org.Mm.eg.db)
+  # head(gene.df)
 
-ego <- enrichGO(gene          = degs,
-                universe      = gene,
-                OrgDb         = org.Mm.eg.db,
+  ego <- enrichGO(gene          = degs,
+                  universe      = gene,
+                  OrgDb         = org.Mm.eg.db,
+                  keyType       = 'ENSEMBL',
+                  ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
+                  pAdjustMethod = "BH",
+                  pvalueCutoff  = 0.05,
+                  qvalueCutoff  = 0.05,
+                  readable      = TRUE)
+  head(ego, 10)
+
+
+  ggo <- groupGO(gene     = degs,
+                OrgDb    = org.Mm.eg.db,
                 keyType       = 'ENSEMBL',
-                ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
-                pAdjustMethod = "BH",
-                pvalueCutoff  = 0.05,
-                qvalueCutoff  = 0.05,
-                readable      = TRUE)
-head(ego, 10)
 
-
-ggo <- groupGO(gene     = degs,
-               OrgDb    = org.Mm.eg.db,
-                keyType       = 'ENSEMBL',
-
-               ont      = "MF",
-               level    = 4,
-               readable = TRUE)
-head(ggo, 10)
+                ont      = "MF",
+                level    = 4,
+                readable = TRUE)
+  head(ggo, 10)
 
 
 
 
-# add the proteomics data of the old project. 
-# check how data is comparable to the new knockout (cellline and double KO)
-# read protein data
-library(openxlsx)
-old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
-diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
-pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
+  # add the proteomics data of the old project. 
+  # check how data is comparable to the new knockout (cellline and double KO)
+  # read protein data
+  library(openxlsx)
+  old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
+  diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
+  pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
 
-# gsea for Clusters
-library(fgsea)
-# get list of clusters and genes, to use as pathways for fgsea
-clust_genes <- old_expression_clusters[c("Cluster", "Name")]
-clust_genes$entrez = mapIds(org.Mm.eg.db,
-                     keys=clust_genes$Name, 
-                     column="ENTREZID",
-                     keytype="SYMBOL",
-                     multiVals="first")
+  # gsea for Clusters
+  library(fgsea)
+  # get list of clusters and genes, to use as pathways for fgsea
+  clust_genes <- old_expression_clusters[c("Cluster", "Name")]
+  clust_genes$entrez = mapIds(org.Mm.eg.db,
+                      keys=clust_genes$Name, 
+                      column="ENTREZID",
+                      keytype="SYMBOL",
+                      multiVals="first")
 
-clusters <-unique(clust_genes[["Cluster"]]) 
-clust_pathways_symbols <- list(
-  clust_genes[clust_genes$Cluster == clusters[1],"Name"],
-  clust_genes[clust_genes$Cluster == clusters[2],"Name"],
-  clust_genes[clust_genes$Cluster == clusters[3],"Name"],
-  clust_genes[clust_genes$Cluster == clusters[4],"Name"],
-  clust_genes[clust_genes$Cluster == clusters[5],"Name"]
-)
-clust_genes <- clust_genes[!is.na(clust_genes$entrez),]
-clust_pathways_entrez <- list(
-  clust_genes[clust_genes$Cluster == clusters[1],"entrez"],
-  clust_genes[clust_genes$Cluster == clusters[2],"entrez"],
-  clust_genes[clust_genes$Cluster == clusters[3],"entrez"],
-  clust_genes[clust_genes$Cluster == clusters[4],"entrez"],
-  clust_genes[clust_genes$Cluster == clusters[5],"entrez"]
-)
+  clusters <-unique(clust_genes[["Cluster"]]) 
+  clust_pathways_symbols <- list(
+    clust_genes[clust_genes$Cluster == clusters[1],"Name"],
+    clust_genes[clust_genes$Cluster == clusters[2],"Name"],
+    clust_genes[clust_genes$Cluster == clusters[3],"Name"],
+    clust_genes[clust_genes$Cluster == clusters[4],"Name"],
+    clust_genes[clust_genes$Cluster == clusters[5],"Name"]
+  )
+  names(clust_pathways_symbols) <- clusters
+  # clust_genes <- clust_genes[!is.na(clust_genes$entrez),]
+  # clust_pathways_entrez <- list(
+  #   clust_genes[clust_genes$Cluster == clusters[1],"entrez"],
+  #   clust_genes[clust_genes$Cluster == clusters[2],"entrez"],
+  #   clust_genes[clust_genes$Cluster == clusters[3],"entrez"],
+  #   clust_genes[clust_genes$Cluster == clusters[4],"entrez"],
+  #   clust_genes[clust_genes$Cluster == clusters[5],"entrez"]
+  # )
+  # names(clust_pathways_entrez) <- clusters
 
+  # TODO: POSITIVE and NEGATIVE foldchange each.
 
-names(clust_pathways) <- clusters
+  ranks_input <- as_tibble(res)  %>% 
+    dplyr::select("symbol", "stat") %>% 
+    na.omit() %>% 
+    distinct() %>% 
+    group_by(symbol) %>% 
+    summarize(stat=mean(stat))
+  ranks_input <- deframe(ranks_input)
+  fgseaRes <- fgsea(pathways = clust_pathways_symbols, 
+                    stats    = ranks_input,
+                    nperm=1000)
+  fwrite(fgseaRes, file = file.path(out.path, paste('fgsea_results_clusters_', control, '_', treat, '.tsv', sep = '')), sep = "\t", sep2=c("", " ", ""))
 
+}

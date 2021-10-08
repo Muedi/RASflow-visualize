@@ -6,32 +6,36 @@ library(tximport)
 library(mygene)
 library(hash)
   ### heatmap of topgenes
-  library("genefilter")
-  library("AnnotationDbi")
-  library("org.Mm.eg.db")
-  library("pheatmap")
+library("genefilter")
+library("AnnotationDbi")
+library("org.Mm.eg.db")
+library("pheatmap")
 library("RColorBrewer")
 library(viridis)
-  library("ggbeeswarm")
+library("ggbeeswarm")
 library(EnhancedVolcano)
-
+library(openxlsx)
 norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/countGroup"
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/DEA/gene-level"
 out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/visualization"
 
 yaml.file <- yaml.load_file('configs/config_main_neutrophiles.yaml')
+yaml.file.old <- yaml.load_file('configs/config_main_neutro_old.yaml')
 
 
 # extract the information from the yaml file
 project <- yaml.file$PROJECT  # project name
+project.old <- yaml.file.old$PROJECT  # project name
 dea.tool <- yaml.file$DEATOOL  # tool used for DEA
 quant.path <- file.path(yaml.file$FINALOUTPUT, project, "trans/quant")
+quant.path.old <- file.path(yaml.file.old$FINALOUTPUT, project.old, "trans/quant")
 gene.level <- yaml.file$GENE_LEVEL  # whether to do gene-level analysis
 controls <- yaml.file$CONTROL  # all groups used as control
 treats <- yaml.file$TREAT  # all groups used as treat, should correspond to control
 filter.need <- yaml.file$FILTER$yesOrNo
 pair.test <- yaml.file$PAIR
 meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_47removed.tsv"
+meta.file.old <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_old.tsv"
 ENSEMBL <- yaml.file$ENSEMBL
 dataset <- yaml.file$EnsemblDataSet
 dea.path <- file.path(yaml.file$FINALOUTPUT, project, "trans/dea")
@@ -84,11 +88,16 @@ convert.id2symbol <- function(gene.id) {
 ### load salomns quants as deseq2 object.
 ### the original quant files from Salmon
 meta.data <- read.csv(meta.file, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
+meta.data.old <- read.csv(meta.file.old, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 samples.all <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject
+samples.all.old <- meta.data.old$sample
+group.all.old <- meta.data.old$group
+subject.all.old <- meta.data.old$subject
 # get complete counts
 samples <- factor(samples.all) 
+samples.old <- factor(samples.all.old) 
   ### import quantification as txi
   # files <- file.path(quant.path, samples, "quant.sf")
   # names(files) <- samples
@@ -98,8 +107,11 @@ samples <- factor(samples.all)
   # noVersion because ensemble is used 
   files.noVersion <- file.path(quant.path, samples, "quant_noVersion.sf")
   names(files.noVersion) <- samples
+  files.noVersion.old <- file.path(quant.path.old, samples.old, "quant_noVersion.sf")
+  names(files.noVersion.old) <- samples.old
   # load data fro salom, gene level
   txi_all <- tximport(files.noVersion, type = "salmon", tx2gene = tx2gene, countsFromAbundance = "lengthScaledTPM")
+  txi_all_old <- tximport(files.noVersion.old, type = "salmon", tx2gene = tx2gene, countsFromAbundance = "lengthScaledTPM")
 
 
 # all.dea.tibble <- tibble()
@@ -110,6 +122,12 @@ joined_table <- as.data.frame(txi_all$counts) # length sclaed tpm since indicate
 joined_table <- tibble(rownames_to_column(joined_table, "ensembl"))   
 # filter rows, with only counts below 2
 joined_table <- joined_table %>% filter_at(vars(-ensembl), any_vars(. > 2))
+# old 
+joined_table.old <- as.data.frame(txi_all_old$counts) # length sclaed tpm since indicated in tximport function
+joined_table.old <- tibble(rownames_to_column(joined_table.old, "ensembl"))   
+# filter rows, with only counts below 2
+joined_table.old <- joined_table.old %>% filter_at(vars(-ensembl), any_vars(. > 2))
+
 
 # pca of all samples
 library(gridExtra)
@@ -147,7 +165,7 @@ topVarGenes <- head(order(rowVars(as.matrix(joined_table %>% column_to_rownames(
 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
-png(file = file.path(out.path, 'top-gene-heatmap_all_samples.png'),width=3300, height=6000, res=300,  title = 'top genes by variance')
+png(file = file.path(out.path, 'top-gene-heatmap_all_samples.png'), width=3300, height=6000, res=300, title = 'top genes by variance')
 pheatmap(log2(mat + 1), 
           annotation_col = group.anno, 
           color=inferno(20), 
@@ -193,9 +211,180 @@ pheatmap(mat,
           main="Top 1000 Genes, lengthScaledTPM normalized by rowMeans, quantile breaks in color scheme") 
 dev.off() 
 
+old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
+
+clust_genes <- old_expression_clusters[c("Cluster", "Name")]
+clust_genes <- clust_genes[clust_genes$Cluster != "none",]
+
+# # avergae expression of all samples/groups
+# exp.plot <- joined_table %>% gather(key="sample", value="value", -ensembl) %>% 
+#     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+#     filter(value>0) %>%
+#     mutate(value=log2(value)) %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=group)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Log2 Gene Expression", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_group.png'))
+
+
+## TODO: 
+# get TPMs from RPKMs of the old data to compare directly. 
+
+# get log normalized TPMs:
+logTPM <- joined_table %>% mutate(across(-ensembl, ~ log(.x + 1)))
+logTPM.old <- joined_table.old %>% mutate(across(-ensembl, ~ log(.x + 1)))
+
+# compute z-scores
+zscore<- function(x){
+    z<- (x - mean(x)) / sd(x)
+    return(z)
+}
+# older data zscores driectly from RPKMs
+# zscores_old_rpkm <- as_tibble(old_expression_clusters) %>% mutate(across(c(-Cluster, -Name), ~ zscore(.x)))
+zscores <- logTPM %>% mutate(across(-ensembl, ~ zscore(.x)))
+zscores$Symbol <- convert.id2symbol(zscores$ensembl)
+# old data
+zscores.old <- logTPM.old %>% mutate(across(-ensembl, ~ zscore(.x)))
+zscores.old$Symbol <- convert.id2symbol(zscores.old$ensembl)
+# # avg expr over all
+# exp.plot <- zscores %>% gather(key="sample", value="value",  c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=sample, color=group)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="z-score", y="sample"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_sample.png'))
+# Cluster I
+exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=group)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustI.png'))
+
+# Cluster II
+exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "II","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=group)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustII.png'))
+
+# Cluster III
+exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "III","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=group)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustIII.png'))
+
+# Cluster IV
+exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "IV","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=group)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.png'))
+# old data plotted 
+# Cluster I
+exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=subject)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustI.old.png'))
+
+# Cluster II
+exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "II","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=subject)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustII.old.png'))
+
+# Cluster III
+exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "III","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=subject)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustIII.old.png'))
+
+# Cluster IV
+exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "IV","Name"]) %>%
+    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+    mutate(sample=as.factor(sample)) %>% 
+    ggplot(aes(x=value, y=group, color=subject)) + 
+    geom_boxplot() +
+    labs(title="Avg. Gene Expression in groups",
+         x="Z-score", y="Group"
+    ) +
+    coord_flip() +
+    theme_minimal()
+ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.old.png'))
+
+# comparison to proteomics expression
+diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
+diff_express_protein_old <- as_tibble(diff_express_protein_old)
+diff_express_protein_old <- diff_express_protein_old %>% separate_rows(Gene_name)
+diff_express_protein_old <- diff_express_protein_old %>% mutate()
+
 
 # combined_degs holds top X of all comparisons 
 combined_degs = tibble()
+combined_degs_1000 = tibble()
 plot_spi1 = tibble()
 plot_ets2 = tibble()
 plot_junb = tibble()
@@ -420,6 +609,14 @@ for (i in 1:length(controls)) {
     combined_degs <- combined_degs %>%
       bind_rows(top20 %>% mutate(combination=paste(control, treat, sep = "_")))
   }
+  # top 1000 degs
+  top1000 <- as_tibble(resOrdered[1:1000,] , rownames="ensembl")
+  if ( plyr::empty(combined_degs_1000)   ) {
+    combined_degs_1000 <- top1000 %>% mutate(combination=paste(control, treat, sep = "_"))
+  } else {
+    combined_degs_1000 <- combined_degs_1000 %>%
+      bind_rows(top1000 %>% mutate(combination=paste(control, treat, sep = "_")))
+  }
 
 
   tibb.dea <- as_tibble(resOrdered , rownames="ensembl")
@@ -565,6 +762,51 @@ pheatmap(log2(mat + 1),
           cluster_cols=F,
           main="Top 20 differential genes, log transformed lengthScaledTPM") 
 dev.off() 
+
+
+# get clusters print map of 1000 degs for the wt combis
+# only wt vs everything
+combined_degs_wt <- combined_degs_1000 %>% filter( grepl("WT_", combined_degs_1000$combination)) 
+heatmap_input <- tpm %>% filter(ensembl %in% combined_degs_wt$ensembl) 
+combis <- combined_degs_wt %>% filter(ensembl %in% heatmap_input$ensembl) %>% dplyr::select(combination)
+combined_degs_wt$symbol <- convert.id2symbol(combined_degs_wt$ensembl)
+# get rid of duplications and (hopefully retain info on both combis
+test <- combined_degs_wt %>% group_by(ensembl) %>% summarise(combination_summed=paste0(combination, sep = "|"))
+combined_degs_wt$combination_summed <- test$combination_summed
+distinct_ensembl <-  combined_degs_wt %>% 
+     distinct(ensembl, .keep_all=T)
+# add toi heatmap input
+x <- distinct_ensembl %>% dplyr::select("combination", "ensembl")
+heatmap_input <- heatmap_input %>% left_join(x, by="ensembl")
+heatmap_input <- heatmap_input[order(heatmap_input$combination),]
+# heatmap of gene expression
+  mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select(-symbol, -combination) 
+  #mat  <- mat - rowMeans(mat)
+  # annotate mat
+  ens.str <- rownames(mat)
+  # sym.str <- mapIds(org.Mm.eg.db,
+  #                   keys=ens.str,
+  #                   column="SYMBOL",
+  #                   keytype="ENSEMBL",
+  #                   multivals="first")
+  sym.str <- convert.id2symbol(ens.str)
+  sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
+  rownames(mat) <- sym.str
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+  anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
+# mat_breaks <- seq(min(mat), max(mat), length.out = 10)
+png(file = file.path(out.path, 'degs-wt-combis-heatmap_all_samples_top1000.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
+wt_clust <- pheatmap(log2(mat + 1), 
+          annotation_col = group.anno, 
+          annotation_row = anno.genes,
+          color=inferno(20), 
+          cluster_cols=F,
+          main="Top 1000 differential genes, log transformed lengthScaledTPM") 
+wt_clust
+dev.off() 
+clusteres_wt_combis <- cutree(wt_clust$tree_row, k = 6)
+
+# Venn diagramm of old an New clusters? Dot plot better? 
 
 
 ets2_plot <- tpm[tpm$ensembl == ets2,] %>% dplyr::select(-ensembl, -symbol)
