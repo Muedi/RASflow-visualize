@@ -379,7 +379,7 @@ ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.old.png'))
 diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
 diff_express_protein_old <- as_tibble(diff_express_protein_old)
 diff_express_protein_old <- diff_express_protein_old %>% separate_rows(Gene_name)
-diff_express_protein_old <- diff_express_protein_old %>% mutate()
+#diff_express_protein_old <- diff_express_protein_old %>% mutate()
 
 
 # combined_degs holds top X of all comparisons 
@@ -556,7 +556,7 @@ for (i in 1:length(controls)) {
       bind_rows(top20 %>% mutate(combination=paste(control, treat, sep = "_")))
   }
   # top 1000 degs
-  top1000 <- as_tibble(resOrdered[1:1000,] , rownames="ensembl")
+  top1000 <- as_tibble(resOrdered[1:1500,] , rownames="ensembl")
   if ( plyr::empty(combined_degs_1000)   ) {
     combined_degs_1000 <- top1000 %>% mutate(combination=paste(control, treat, sep = "_"))
   } else {
@@ -713,35 +713,39 @@ dev.off()
 # get clusters print map of 1000 degs for the wt combis
 # only wt vs everything
 combined_degs_wt <- combined_degs_1000 %>% filter( grepl("WT_", combined_degs_1000$combination)) 
+combined_degs_wt <- combined_degs_wt %>% distinct(ensembl, .keep_all=T)
 heatmap_input <- tpm %>% filter(ensembl %in% combined_degs_wt$ensembl) 
 combis <- combined_degs_wt %>% filter(ensembl %in% heatmap_input$ensembl) %>% dplyr::select(combination)
 combined_degs_wt$symbol <- convert.id2symbol(combined_degs_wt$ensembl)
 # get rid of duplications and (hopefully retain info on both combis
 test <- combined_degs_wt %>% group_by(ensembl) %>% summarise(combination_summed=paste0(combination, sep = "|"))
 combined_degs_wt$combination_summed <- test$combination_summed
-distinct_ensembl <-  combined_degs_wt %>% 
-     distinct(ensembl, .keep_all=T)
+# distinct_ensembl <-  combined_degs_wt %>% distinct(symbol, .keep_all=T)
+     #distinct(ensembl, .keep_all=T)
 # add toi heatmap input
-x <- distinct_ensembl %>% dplyr::select("combination", "ensembl")
+x <- combined_degs_wt %>% dplyr::select("combination", "ensembl")
 heatmap_input <- heatmap_input %>% left_join(x, by="ensembl")
 heatmap_input <- heatmap_input[order(heatmap_input$combination),]
 # heatmap of gene expression
   mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select(-symbol, -combination) 
   #mat  <- mat - rowMeans(mat)
   # annotate mat
-  ens.str <- rownames(mat)
-  # sym.str <- mapIds(org.Mm.eg.db,
-  #                   keys=ens.str,
-  #                   column="SYMBOL",
-  #                   keytype="ENSEMBL",
-  #                   multivals="first")
-  sym.str <- convert.id2symbol(ens.str)
-  sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
-  rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
-  anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
+  # ens.str <- rownames(mat)
+  # # sym.str <- mapIds(org.Mm.eg.db,
+  # #                   keys=ens.str,
+  # #                   column="SYMBOL",
+  # #                   keytype="ENSEMBL",
+  # #                   multivals="first")
+  # sym.str <- convert.id2symbol(ens.str)
+  # sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
+sym.str <- heatmap_input$symbol
+sym.str[is.na(sym.str)] <- heatmap_input$ensembl
+sym.str <- make.unique(sym.str)
+rownames(mat) <- sym.str
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
-png(file = file.path(out.path, 'degs-wt-combis-heatmap_all_samples_top1000.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
+png(file = file.path(out.path, 'degs-wt-combis-heatmap_all_samples_top1500.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
 wt_clust <- pheatmap(log2(mat + 1), 
           annotation_col = group.anno, 
           annotation_row = anno.genes,
@@ -750,9 +754,73 @@ wt_clust <- pheatmap(log2(mat + 1),
           main="Top 1000 differential genes, log transformed lengthScaledTPM") 
 wt_clust
 dev.off() 
-clusteres_wt_combis <- cutree(wt_clust$tree_row, k = 6)
+clusters_wt_combis <- cutree(wt_clust$tree_row, k = 3)
 
 # Venn diagramm of old an New clusters? Dot plot better? 
+clusts_list_new <- list(
+  "1" = names(clusters_wt_combis[clusters_wt_combis == 1]),
+  "2" = names(clusters_wt_combis[clusters_wt_combis == 2]),
+  "3" = names(clusters_wt_combis[clusters_wt_combis == 3])#,
+  # "4" = names(clusters_wt_combis[clusters_wt_combis == 4]),
+  # "5" = names(clusters_wt_combis[clusters_wt_combis == 5]),
+  # "6" = names(clusters_wt_combis[clusters_wt_combis == 6])
+)
+
+clusts_list_old <- list(
+  "I" = clust_genes[clust_genes$Cluster == "I", "Name"],
+  "II" = clust_genes[clust_genes$Cluster == "II", "Name"],
+  "III" = clust_genes[clust_genes$Cluster == "III", "Name"],
+  "IV" = clust_genes[clust_genes$Cluster == "IV", "Name"]
+)
+# library(ggvenn)
+# save_venn <- function(clust_old) {
+#   x <- c(clusts_list_old[clust_old], clusts_list_new)
+#   ggvenn(
+#     x, 
+#     fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+#     stroke_size = 0.5, set_name_size = 4
+#     )
+#   ggsave(filename = file.path(out.path, paste('Venn_', "CLust-",clust_old,"-vs-1-2-3", '.png', sep = '')))
+# }
+# x <- c(clusts_list_old["III"], clusts_list_new[4:6])
+#   ggvenn(
+#     x, 
+#     fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+#     stroke_size = 0.5, set_name_size = 4
+#     )
+#   ggsave(filename = file.path(out.path, paste('Venn_', "CLust-","III","-vs-1-2-3", '.png', sep = '')))
+
+
+# library(eulerr)
+lists <- c(clusts_list_new, clusts_list_old)
+# lists_eulerr <- lapply(lists, length)
+
+# # Get the combinations of names of list elements
+# nms <- combn( names(lists) , 2 , FUN = paste0 , collapse = "&" , simplify = FALSE )
+# # Make the combinations of list elements
+# ll <- combn( lists , 2 , simplify = FALSE )
+# # Intersect the list elements
+# list.intersections <- lapply( ll , function(x) length( intersect( x[[1]] , x[[2]] ) ) )
+# # Output with names
+# list.intersections <- setNames( list.intersections , nms )
+# lists_eulerr <- append(lists_eulerr , list.intersections)
+# fit_euler <- euler(unlist(lists_eulerr), shape = "ellipse")
+# png(file = file.path(out.path, 'euler-plot.png'),width=2000, height=2000, res=300,  title = 'Euler diagram of all clusters (old: roman numbers)')
+# plot(fit_euler, quantities = list(type = "counts"))
+# dev.off() 
+
+library(UpSetR)
+
+upset_plot <- upset(fromList(lists), 
+      nsets = length(lists), nintersects = 60,
+      mainbar.y.label = "Intersections", sets.x.label = "DE Genes in Cluster X",
+      mb.ratio = c(0.6, 0.4),
+      text.scale = c(1.3, 1.3, 1, 1, 1, 0.75)
+)
+# ggsave(file.path("output","all proj UpSet plot.png"))
+png(file = file.path(out.path, 'upset-plot.png'),width=2000, height=2000, res=300,  title = 'Upset plot of all clusters (old: roman numbers)')
+upset_plot
+dev.off()
 
 # function for countplots
 save_combined_countplots <- function(tpm, sym) {

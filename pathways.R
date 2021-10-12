@@ -80,8 +80,8 @@ samples.all <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject
 
-for (i in 1:length(controls)) {
-
+# for (i in 1:length(controls)) {
+for (i in 1) {
   control <- controls[i] # KO-PU-Cellline
   treat <- treats[i] # KO-PU+KO-Ets2
   samples <- factor(samples.all[c(which(group.all == control), which(group.all == treat))]) 
@@ -225,7 +225,6 @@ for (i in 1:length(controls)) {
   # read protein data
   library(openxlsx)
   old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
-  diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
   pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
 
   # gsea for Clusters
@@ -271,4 +270,17 @@ for (i in 1:length(controls)) {
                     nperm=1000)
   fwrite(fgseaRes, file = file.path(out.path, paste('fgsea_results_clusters_', control, '_', treat, '.tsv', sep = '')), sep = "\t", sep2=c("", " ", ""))
 
+  ### proteomics
+  diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
+  diff_express_protein_old <- as_tibble(diff_express_protein_old) %>% separate_rows(Gene_name)
+  # diff_express_protein_old <- diff_express_protein_old %>% mutate(diff.expr = ((sca.adj.pval < 0.05) & (abs(logFC) >= 2)))
+
+  degs <- as_tibble(res, rownames="ensembl")
+  # degs <- degs %>% mutate(diff.expr = ((padj < 0.05) & (abs(log2FoldChange) >= 2)))
+  degs <- degs %>% mutate(diff.expr = ((padj < 0.05) )) # & (abs(log2FoldChange) >= 2)))
+
+  diff.prots.genenames <- diff_express_protein_old$Gene_name
+  diff.genes.names <- pull(degs[degs$diff.expr == T,], "symbol")
+
+  intersect(diff.prots.genenames, diff.genes.names)
 }
