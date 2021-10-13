@@ -7,6 +7,9 @@ library(tximport)
 library(mygene)
 library(hash)
 library(data.table)                 
+library(clusterProfiler)
+library(openxlsx)
+library(fgsea)
 
 norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/countGroup"
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/DEA/gene-level"
@@ -72,6 +75,16 @@ convert.id2symbol <- function(gene.id) {
   return(gene.symbol)
 }
 
+# relevant data
+# proteomics data
+diff_express_protein <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
+diff_express_protein <- as_tibble(diff_express_protein) %>% separate_rows(Gene_name)
+diff.prots.genenames <- diff_express_protein$Gene_name
+diff.prots.genenames <- diff.prots.genenames[!is.na(diff.prots.genenames)]
+diff.prots.genenames <- diff.prots.genenames[!duplicated(diff.prots.genenames)]
+# old array/rnaseq data
+old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
+pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
 
 ### load salomns quants as deseq2 object.
 ### the original quant files from Salmon
@@ -80,8 +93,13 @@ samples.all <- meta.data$sample
 group.all <- meta.data$group
 subject.all <- meta.data$subject
 
-# for (i in 1:length(controls)) {
-for (i in 1) {
+# init list of combinations of ctrl/treat
+intersect_prot_trans <- tibble(
+  symbol = diff.prots.genenames
+)
+
+for (i in 1:length(controls)) {
+# for (i in 1) {
   control <- controls[i] # KO-PU-Cellline
   treat <- treats[i] # KO-PU+KO-Ets2
   samples <- factor(samples.all[c(which(group.all == control), which(group.all == treat))]) 
@@ -181,7 +199,6 @@ for (i in 1) {
   # lapply(gobpres, head)
 
   # pathway analysis with clusterprofiler
-  library(clusterProfiler)
   # similar to gage requires fold changes vector named with ids.
   geneList = res$log2FoldChange
   names(geneList) = rownames(res)
@@ -196,26 +213,26 @@ for (i in 1) {
   #         OrgDb = org.Mm.eg.db)
   # head(gene.df)
 
-  ego <- enrichGO(gene          = degs,
-                  universe      = gene,
-                  OrgDb         = org.Mm.eg.db,
-                  keyType       = 'ENSEMBL',
-                  ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
-                  pAdjustMethod = "BH",
-                  pvalueCutoff  = 0.05,
-                  qvalueCutoff  = 0.05,
-                  readable      = TRUE)
-  head(ego, 10)
+  # ego <- enrichGO(gene          = degs,
+  #                 universe      = gene,
+  #                 OrgDb         = org.Mm.eg.db,
+  #                 keyType       = 'ENSEMBL',
+  #                 ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
+  #                 pAdjustMethod = "BH",
+  #                 pvalueCutoff  = 0.05,
+  #                 qvalueCutoff  = 0.05,
+  #                 readable      = TRUE)
+  # head(ego, 10)
 
 
-  ggo <- groupGO(gene     = degs,
-                OrgDb    = org.Mm.eg.db,
-                keyType       = 'ENSEMBL',
+  # ggo <- groupGO(gene     = degs,
+  #               OrgDb    = org.Mm.eg.db,
+  #               keyType       = 'ENSEMBL',
 
-                ont      = "MF",
-                level    = 4,
-                readable = TRUE)
-  head(ggo, 10)
+  #               ont      = "MF",
+  #               level    = 4,
+  #               readable = TRUE)
+  # head(ggo, 10)
 
 
 
@@ -223,12 +240,8 @@ for (i in 1) {
   # add the proteomics data of the old project. 
   # check how data is comparable to the new knockout (cellline and double KO)
   # read protein data
-  library(openxlsx)
-  old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
-  pathways_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 2)
 
   # gsea for Clusters
-  library(fgsea)
   # get list of clusters and genes, to use as pathways for fgsea
   clust_genes <- old_expression_clusters[c("Cluster", "Name")]
   clust_genes$entrez = mapIds(org.Mm.eg.db,
@@ -271,16 +284,47 @@ for (i in 1) {
   fwrite(fgseaRes, file = file.path(out.path, paste('fgsea_results_clusters_', control, '_', treat, '.tsv', sep = '')), sep = "\t", sep2=c("", " ", ""))
 
   ### proteomics
-  diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
-  diff_express_protein_old <- as_tibble(diff_express_protein_old) %>% separate_rows(Gene_name)
-  # diff_express_protein_old <- diff_express_protein_old %>% mutate(diff.expr = ((sca.adj.pval < 0.05) & (abs(logFC) >= 2)))
-
-  degs <- as_tibble(res, rownames="ensembl")
+  
+  degs_tibb <- as_tibble(res, rownames="ensembl")
   # degs <- degs %>% mutate(diff.expr = ((padj < 0.05) & (abs(log2FoldChange) >= 2)))
-  degs <- degs %>% mutate(diff.expr = ((padj < 0.05) )) # & (abs(log2FoldChange) >= 2)))
+  degs_tibb <- degs_tibb %>% mutate(diff.expr = ((padj < 0.05) )) # & (abs(log2FoldChange) >= 2)))
+  # commented out, moved to top
+  # diff.prots.genenames <- diff_express_protein$Gene_name
+  # diff.prots.genenames <- diff.prots.genenames[!is.na(diff.prots.genenames)]
+  diff.genes.names <- pull(degs_tibb[degs_tibb$diff.expr == T,], "symbol")
 
-  diff.prots.genenames <- diff_express_protein_old$Gene_name
-  diff.genes.names <- pull(degs[degs$diff.expr == T,], "symbol")
+  # logical vector, indicating, if genes is diff expressed in transcriptome too.
+  logi_vec <- intersect_prot_trans$symbol %in% intersect(diff.prots.genenames, diff.genes.names)
+  intersect_prot_trans[paste(control, treat, sep="_")] <- logi_vec
+  # add vector that gives the lfc of the transcript
+  tmp_tibb <- degs_tibb[degs_tibb$symbol %in%  diff.prots.genenames, c("ensembl", "symbol", "padj", "log2FoldChange")] 
+  tmp_tibb <- tmp_tibb %>% rename("log2FoldChange" = "lfc")
+  tmp_tibb <- tmp_tibb %>% rename_with(~ paste(control, treat, ., sep="_"), c(-"ensembl", -"symbol"))
+  # remove duplicates, by adding the ensembl code (only for the second and following duplicates)
+  tmp_tibb[duplicated(tmp_tibb$symbol) & !is.na(tmp_tibb$symbol),] <- tmp_tibb %>% filter(duplicated(symbol)) %>% filter(!is.na(symbol)) %>% mutate(symbol = paste(symbol, ensembl, sep="_")) 
 
-  intersect(diff.prots.genenames, diff.genes.names)
+  intersect_prot_trans <- intersect_prot_trans %>% full_join(tmp_tibb %>% dplyr::select(-"ensembl"), by="symbol")
 }
+
+
+write.xlsx(intersect_prot_trans, file=file.path(out.path, "prot.trans.overlap.full.join.xlsx"), row.names=F, overwrite=T)
+
+combis <- paste(controls, treats, sep="_")
+only_bool <- intersect_prot_trans[c("symbol", combis)]
+
+input_upset <- list(
+  only_bool$symbol[only_bool[[ combis[[1]] ]] ]
+)
+
+library(UpSetR)
+
+upset_plot <- upset(fromList(lists), 
+      nsets = length(lists), nintersects = 60,
+      mainbar.y.label = "Intersections", sets.x.label = "DE Genes in Cluster X",
+      mb.ratio = c(0.6, 0.4),
+      text.scale = c(1.3, 1.3, 1, 1, 1, 0.75)
+)
+# ggsave(file.path("output","all proj UpSet plot.png"))
+png(file = file.path(out.path, 'upset-plot-prot-vs-trans.png'),width=2000, height=2000, res=300,  title = 'Upset plot of all comparisons')
+upset_plot
+dev.off()
