@@ -78,7 +78,10 @@ convert.id2symbol <- function(gene.id) {
 # relevant data
 # proteomics data
 diff_express_protein <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
-diff_express_protein <- as_tibble(diff_express_protein) %>% separate_rows(Gene_name)
+diff_express_protein <- as_tibble(diff_express_protein) %>% 
+                        separate_rows(Gene_name) %>% 
+                        filter(sca.adj.pval < 0.05 & abs(logFC) > 0.25)
+
 diff.prots.genenames <- diff_express_protein$Gene_name
 diff.prots.genenames <- diff.prots.genenames[!is.na(diff.prots.genenames)]
 diff.prots.genenames <- diff.prots.genenames[!duplicated(diff.prots.genenames)]
@@ -308,6 +311,14 @@ for (i in 1:length(controls)) {
 
 
 write.xlsx(intersect_prot_trans, file=file.path(out.path, "prot.trans.overlap.full.join.xlsx"), row.names=F, overwrite=T)
+
+## genes that overlap in prim and cellline ko
+# intersect_prot_trans[intersect_prot_trans["WT_KO-PU"] == F & intersect_prot_trans["WT_KO-PU-cellline"] == F,"symbol" ]                                                                                                          
+# write.xlsx(list(
+#   "Not differential Expressed" = intersect_prot_trans[intersect_prot_trans["WT_KO-PU"] == F & intersect_prot_trans["WT_KO-PU-cellline"] == F,"symbol" ] ,
+#   "Differential expressed" = intersect_prot_trans[intersect_prot_trans["WT_KO-PU"] == T & intersect_prot_trans["WT_KO-PU-cellline"] == T,"symbol" ]) ,
+#   file=file.path(out.path, "prot.trans.overlap.prim.vs.cellline.xlsx")
+# )
 
 combis <- paste(controls, treats, sep="_")
 only_bool <- intersect_prot_trans[c("symbol", combis)]
