@@ -772,6 +772,45 @@ clusts_list_old <- list(
   "III" = clust_genes[clust_genes$Cluster == "III", "Name"],
   "IV" = clust_genes[clust_genes$Cluster == "IV", "Name"]
 )
+
+"35__HoxPU1_Neu_v2_1_S35_R1_001"             "36__HoxPU1_Neu_v2_2_S36_R1_001"             "37__HoxPU1_Neu_v2_3_S37_R1_001"             "38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001" "39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001" "40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001"
+ "41__PU1_WT_1731_S41_R1_001"                 "42__PU1_WT_1691_S42_R1_001"                 "43__PU1_WT_1735_S43_R1_001"                 "44__PU1_WT_1734_S44_R1_001"                 "45__PU1_Neu_1712_S45_R1_001"                "46__PU1_Neu_1715_S46_R1_001"               
+ "48__PU1_Neu_1718_S48_R1_001"                "ensembl"                                    "symbol"      
+
+# heatmap of old Clusters in the new data.
+heatmap_input <- tpm %>% filter(symbol %in% clust_genes$Name) %>% dplyr::select(c(-"38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001",
+                                                                                  -"39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001",
+                                                                                  -"40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001",
+                                                                                  -"45__PU1_Neu_1712_S45_R1_001",
+                                                                                  -"46__PU1_Neu_1715_S46_R1_001",
+                                                                                  -"48__PU1_Neu_1718_S48_R1_001"))
+  mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select(-symbol) 
+  #mat  <- mat - rowMeans(mat)
+  # annotate mat
+  # ens.str <- rownames(mat)
+  # # sym.str <- mapIds(org.Mm.eg.db,
+  # #                   keys=ens.str,
+  # #                   column="SYMBOL",
+  # #                   keytype="ENSEMBL",
+  # #                   multivals="first")
+  # sym.str <- convert.id2symbol(ens.str)
+  # sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
+sym.str <- heatmap_input$symbol
+sym.str[is.na(sym.str)] <- heatmap_input$ensembl
+sym.str <- make.unique(sym.str)
+rownames(mat) <- sym.str
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+anno.genes <- clust_genes %>% as_tibble() %>% column_to_rownames("Name") 
+# mat_breaks <- seq(min(mat), max(mat), length.out = 10)
+png(file = file.path(out.path, 'degs-old-clusters-heatmap_all_samples_top1500.png'),width=3300, height=3600, res=300,  title = 'Old cluster genes')
+wt_clust <- pheatmap(log2(mat + 1), 
+          annotation_col = group.anno, 
+          annotation_row = anno.genes,
+          color=inferno(20), 
+          cluster_cols=F,
+          main="Old Cluster genes, log transformed lengthScaledTPM") 
+wt_clust
+dev.off() 
 # library(ggvenn)
 # save_venn <- function(clust_old) {
 #   x <- c(clusts_list_old[clust_old], clusts_list_new)

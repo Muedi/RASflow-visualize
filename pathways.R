@@ -124,11 +124,13 @@ for (i in 1:length(controls)) {
   design <- model.matrix(~group)
   dds <- DESeqDataSetFromTximport(txi, colData = colData, design = design)
 
+
   # Filtering
   if (filter.need) {
     keep <- rowSums(counts(dds)) >= 10
     dds <- dds[keep,]
   }
+  universe <- rownames(dds)
   ## specify the control group
   dds$group <- relevel(dds$group, ref = control)
   colnames(dds) <- dds@colData$samples
@@ -217,7 +219,7 @@ for (i in 1:length(controls)) {
   # head(gene.df)
 
   # ego <- enrichGO(gene          = degs,
-  #                 universe      = gene,
+  #                 universe      =  max.universe,
   #                 OrgDb         = org.Mm.eg.db,
   #                 keyType       = 'ENSEMBL',
   #                 ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
@@ -226,17 +228,32 @@ for (i in 1:length(controls)) {
   #                 qvalueCutoff  = 0.05,
   #                 readable      = TRUE)
   # head(ego, 10)
+  # ego <- as_tibble(ego)
+  # write.xlsx(ego, file=file.path(out.path, paste("GO-enrichment", control, treat, "max.universe.xlsx", sep=".")), row.names=F, overwrite=T)
 
+  ego <- enrichGO(gene          = degs,
+                  universe      = gene,
+                  OrgDb         = org.Mm.eg.db,
+                  keyType       = 'ENSEMBL',
+                  ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
+                  pAdjustMethod = "BH",
+                  pvalueCutoff  = 0.05,
+                  qvalueCutoff  = 0.05,
+                  readable      = TRUE)
+  head(ego, 10)
+  ego <- as_tibble(ego)
+  write.xlsx(ego, file=file.path(out.path, paste("GO-enrichment", control, treat, "genes.rowsums.gt.10.xlsx", sep=".")), row.names=F, overwrite=T)
 
-  # ggo <- groupGO(gene     = degs,
-  #               OrgDb    = org.Mm.eg.db,
-  #               keyType       = 'ENSEMBL',
+  ggo <- groupGO(gene     = degs,
+                OrgDb    = org.Mm.eg.db,
+                keyType       = 'ENSEMBL',
 
-  #               ont      = "MF",
-  #               level    = 4,
-  #               readable = TRUE)
-  # head(ggo, 10)
-
+                ont      = "MF",
+                level    = 4,
+                readable = TRUE)
+  head(ggo, 10)
+  ggo <- as_tibble(ggo)
+  write.xlsx(ggo, file=file.path(out.path, paste("GO-grouping", control, treat, "xlsx", sep=".")), row.names=F, overwrite=T)
 
 
 
