@@ -235,25 +235,25 @@ for (i in 1:length(controls)) {
                   universe      = gene,
                   OrgDb         = org.Mm.eg.db,
                   keyType       = 'ENSEMBL',
-                  ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
+                  ont           = "BP", # CC: cellular compartment, MF: molecul. function, BP: biol. process
                   pAdjustMethod = "BH",
                   pvalueCutoff  = 0.05,
                   qvalueCutoff  = 0.05,
                   readable      = TRUE)
   head(ego, 10)
   ego <- as_tibble(ego)
-  write.xlsx(ego, file=file.path(out.path, paste("GO-enrichment", control, treat, "genes.rowsums.gt.10.xlsx", sep=".")), row.names=F, overwrite=T)
+  write.xlsx(ego, file=file.path(out.path, paste("GO-enrichment.BP", control, treat, "genes.rowsums.gt.10.xlsx", sep=".")), row.names=F, overwrite=T)
 
   ggo <- groupGO(gene     = degs,
                 OrgDb    = org.Mm.eg.db,
                 keyType       = 'ENSEMBL',
 
-                ont      = "MF",
+                ont      = "BP",
                 level    = 4,
                 readable = TRUE)
   head(ggo, 10)
   ggo <- as_tibble(ggo)
-  write.xlsx(ggo, file=file.path(out.path, paste("GO-grouping", control, treat, "xlsx", sep=".")), row.names=F, overwrite=T)
+  write.xlsx(ggo, file=file.path(out.path, paste("GO-grouping.BP", control, treat, "xlsx", sep=".")), row.names=F, overwrite=T)
 
 
 

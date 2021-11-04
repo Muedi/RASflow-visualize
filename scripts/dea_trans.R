@@ -28,7 +28,7 @@ DEA <- function(control, treat, file.control, file.treat, output.path.dea) {
   group <- relevel(factor(group.all[c(which(group.all == control), which(group.all == treat))]), ref = control)
 
   # The design matrix
-  if (pair.test) {
+  if (pair.test & length(levels(subject)) > 1) {
     design <- model.matrix(~subject+group)
   } else {
     design <- model.matrix(~group)
@@ -210,4 +210,5 @@ for (ith.comparison in c(1:num.comparison)) {
     DEA(control, treat, file.control, file.treat, output.path.dea)
   }
 }
+
 

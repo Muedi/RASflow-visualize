@@ -27,8 +27,7 @@ VISUALIZE: yes  # "yes" or "no"
 KEY: 
 
 ## the path to fastq files
-READSPATH: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/GSE110865
-# older data: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/GSE110865
+READSPATH: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/GSE110864
 
 ## the meta file describing the experiment settings
 METAFILE: configs/metadata.tsv

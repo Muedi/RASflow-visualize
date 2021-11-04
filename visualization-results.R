@@ -15,9 +15,9 @@ library(viridis)
 library("ggbeeswarm")
 library(EnhancedVolcano)
 library(openxlsx)
-norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/countGroup"
-dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/DEA/gene-level"
-out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles/trans/dea/visualization"
+norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/countGroup"
+dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/DEA/gene-level"
+out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/visualization"
 
 yaml.file <- yaml.load_file('configs/config_main_neutrophiles.yaml')
 yaml.file.old <- yaml.load_file('configs/config_main_neutro_old.yaml')
@@ -122,6 +122,7 @@ joined_table <- as.data.frame(txi_all$counts) # length sclaed tpm since indicate
 joined_table <- tibble(rownames_to_column(joined_table, "ensembl"))   
 # filter rows, with only counts below 2
 joined_table <- joined_table %>% filter_at(vars(-ensembl), any_vars(. > 2))
+joined_table.2 <- joined_table
 # old 
 joined_table.old <- as.data.frame(txi_all_old$counts) # length sclaed tpm since indicated in tximport function
 joined_table.old <- tibble(rownames_to_column(joined_table.old, "ensembl"))   
@@ -385,6 +386,7 @@ diff_express_protein_old <- diff_express_protein_old %>% separate_rows(Gene_name
 # combined_degs holds top X of all comparisons 
 combined_degs = tibble()
 combined_degs_1000 = tibble()
+combined_degs_100 = tibble()
 plot_spi1 = tibble()
 plot_ets2 = tibble()
 plot_junb = tibble()
@@ -563,7 +565,42 @@ for (i in 1:length(controls)) {
     combined_degs_1000 <- combined_degs_1000 %>%
       bind_rows(top1000 %>% mutate(combination=paste(control, treat, sep = "_")))
   }
+  # top 100 degs
+  top100 <- as_tibble(resOrdered[1:100,] , rownames="ensembl")
+  if ( plyr::empty(combined_degs_100)   ) {
+    combined_degs_100 <- top100 %>% mutate(combination=paste(control, treat, sep = "_"))
+  } else {
+    combined_degs_100 <- combined_degs_100 %>%
+      bind_rows(top100 %>% mutate(combination=paste(control, treat, sep = "_")))
+  }
 
+  # heatmap 1 vs 1
+  mat  <- joined_table.2 %>% 
+                    filter(ensembl %in% top100$ensembl) %>% 
+                    column_to_rownames("ensembl") %>%
+                    dplyr::select( (meta.data %>% filter(group %in% c(control, treat)) )$sample )
+  #mat  <- mat - rowMeans(mat)
+  # annotate mat
+  ens.str <- rownames(mat)
+  # sym.str <- mapIds(org.Mm.eg.db,
+  #                   keys=ens.str,
+  #                   column="SYMBOL",
+  #                   keytype="ENSEMBL",
+  #                   multivals="first")
+  sym.str <- convert.id2symbol(ens.str)
+  sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
+  rownames(mat) <- sym.str
+  group.anno <- meta.data %>% filter(group %in% c(control, treat)) %>% column_to_rownames("sample") %>% dplyr::select("group")
+  # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
+
+  png(file = file.path(out.path, paste('top100_degs',control, treat ,'heatmap.png', sep='_')),width=3300, height=3600, res=300)
+  pheatmap(log2(mat + 1), 
+          annotation_col = group.anno, 
+          color=inferno(20), 
+          cluster_cols=F,
+          main=paste(control, treat, "Top 100 differential genes, log transformed lengthScaledTPM", sep=" ") 
+          )
+  dev.off() 
 
   tibb.dea <- as_tibble(resOrdered , rownames="ensembl")
   tibb.dea <- tibb.dea[!is.na(tibb.dea$padj),]
@@ -773,9 +810,9 @@ clusts_list_old <- list(
   "IV" = clust_genes[clust_genes$Cluster == "IV", "Name"]
 )
 
-"35__HoxPU1_Neu_v2_1_S35_R1_001"             "36__HoxPU1_Neu_v2_2_S36_R1_001"             "37__HoxPU1_Neu_v2_3_S37_R1_001"             "38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001" "39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001" "40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001"
- "41__PU1_WT_1731_S41_R1_001"                 "42__PU1_WT_1691_S42_R1_001"                 "43__PU1_WT_1735_S43_R1_001"                 "44__PU1_WT_1734_S44_R1_001"                 "45__PU1_Neu_1712_S45_R1_001"                "46__PU1_Neu_1715_S46_R1_001"               
- "48__PU1_Neu_1718_S48_R1_001"                "ensembl"                                    "symbol"      
+# "35__HoxPU1_Neu_v2_1_S35_R1_001"             "36__HoxPU1_Neu_v2_2_S36_R1_001"             "37__HoxPU1_Neu_v2_3_S37_R1_001"             "38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001" "39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001" "40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001"
+#  "41__PU1_WT_1731_S41_R1_001"                 "42__PU1_WT_1691_S42_R1_001"                 "43__PU1_WT_1735_S43_R1_001"                 "44__PU1_WT_1734_S44_R1_001"                 "45__PU1_Neu_1712_S45_R1_001"                "46__PU1_Neu_1715_S46_R1_001"               
+#  "48__PU1_Neu_1718_S48_R1_001"                "ensembl"                                    "symbol"      
 
 # heatmap of old Clusters in the new data.
 heatmap_input <- tpm %>% filter(symbol %in% clust_genes$Name) %>% dplyr::select(c(-"38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001",
@@ -874,6 +911,42 @@ save_combined_countplots <- function(tpm, sym) {
       geom_beeswarm(size = 3,cex = 3) + ggtitle(paste0("Countplot: ", sym)) + theme(axis.text.x = element_text(angle=45, hjust=1))
   ggsave(filename = file.path(out.path, paste('countplot_', sym, '_all_samples_lsTPM', '.png', sep = '')))
 }
+
+# function for countplots with subgroups
+save_combined_countplots_subset <- function(tpm, sym, list_of_samples, samples_text) {
+  countplot <- tpm[tpm$symbol == sym,] %>% dplyr::select(all_of(list_of_samples), -ensembl, -symbol)
+  # countplot <- countplot + 0.00001
+  countplot <- countplot %>% rotate_df() %>% dplyr::rename(count = V1) %>% rownames_to_column("sample")
+  countplot <- countplot %>% left_join(meta.data[c("sample", "group")], by="sample")
+
+  # combined countplots
+  ggplot(countplot, aes(x=group, y=count, color=sample)) +
+      #scale_y_log10() +  
+      geom_beeswarm(size = 3,cex = 3) + ggtitle(paste0("Countplot: ", sym)) + theme(axis.text.x = element_text(angle=45, hjust=1))
+  ggsave(filename = file.path(out.path, paste('countplot_', sym, '_' , samples_text, '_lsTPM', '.png', sep = '')))
+}
+
+# Rnf213 WT vs KO-celline
+samples_subgroup_WT_KOcellline = c("35__HoxPU1_Neu_v2_1_S35_R1_001",
+"36__HoxPU1_Neu_v2_2_S36_R1_001",
+"37__HoxPU1_Neu_v2_3_S37_R1_001",
+"41__PU1_WT_1731_S41_R1_001",
+"42__PU1_WT_1691_S42_R1_001",
+"43__PU1_WT_1735_S43_R1_001",
+"44__PU1_WT_1734_S44_R1_001")
+save_combined_countplots_subset(tpm, "Rnf213", samples_subgroup_WT_KOcellline, "WT_KO-PU-cellline")
+
+# Rnf213 WT vs KO
+samples_subgroup_WT_KO = c("45__PU1_Neu_1712_S45_R1_001",
+"46__PU1_Neu_1715_S46_R1_001",
+"48__PU1_Neu_1718_S48_R1_001",
+"41__PU1_WT_1731_S41_R1_001",
+"42__PU1_WT_1691_S42_R1_001",
+"43__PU1_WT_1735_S43_R1_001",
+"44__PU1_WT_1734_S44_R1_001")
+save_combined_countplots_subset(tpm, "Rnf213", samples_subgroup_WT_KO, "WT_KO-PU")
+save_combined_countplots(tpm, "Rnf213")
+
 
 # Ets2
 save_combined_countplots(tpm, "Ets2")

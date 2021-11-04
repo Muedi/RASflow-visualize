@@ -1,3 +1,283 @@
 Building DAG of jobs...
-Nothing to be done.
-Complete log: /home/max/projects/NGS/neutrophiles/RASflow/.snakemake/log/2021-07-30T120828.757917.snakemake.log
+Using shell: /usr/bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	DEA
+	1	combineSamples
+	1	end
+	3
+
+[Thu Nov  4 09:21:54 2021]
+rule combineSamples:
+    input: output/neutrophiles_combined/trans/quant/35__HoxPU1_Neu_v2_1_S35_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/36__HoxPU1_Neu_v2_2_S36_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/37__HoxPU1_Neu_v2_3_S37_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/41__PU1_WT_1731_S41_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/42__PU1_WT_1691_S42_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/43__PU1_WT_1735_S43_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/44__PU1_WT_1734_S44_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/45__PU1_Neu_1712_S45_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/46__PU1_Neu_1715_S46_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/48__PU1_Neu_1718_S48_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751062_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751063_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751064_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751068_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751069_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751070_1/quant.sf, configs/metadata_combined_sets.tsv
+    output: output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_gene_norm.tsv
+    jobid: 2
+
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+[Thu Nov  4 09:27:34 2021]
+Finished job 2.
+1 of 3 steps (33%) done
+
+[Thu Nov  4 09:27:34 2021]
+rule DEA:
+    input: output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_gene_norm.tsv
+    output: output/neutrophiles_combined/trans/dea/DEA/transcript-level/dea_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/transcript-level/deg_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/gene-level/dea_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/gene-level/deg_Hox-WT_Prim-WT.tsv
+    jobid: 1
+
+Loading required package: limma
+Loading required package: S4Vectors
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:limma’:
+
+    plotMA
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colMeans,
+    colnames, colSums, dirname, do.call, duplicated, eval, evalq,
+    Filter, Find, get, grep, grepl, intersect, is.unsorted, lapply,
+    lengths, Map, mapply, match, mget, order, paste, pmax, pmax.int,
+    pmin, pmin.int, Position, rank, rbind, Reduce, rowMeans, rownames,
+    rowSums, sapply, setdiff, sort, table, tapply, union, unique,
+    unsplit, which, which.max, which.min
+
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+Loading required package: IRanges
+Loading required package: GenomicRanges
+Loading required package: GenomeInfoDb
+Loading required package: SummarizedExperiment
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: DelayedArray
+Loading required package: matrixStats
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Biobase’:
+
+    anyMissing, rowMedians
+
+Loading required package: BiocParallel
+
+Attaching package: ‘DelayedArray’
+
+The following objects are masked from ‘package:matrixStats’:
+
+    colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges
+
+The following objects are masked from ‘package:base’:
+
+    aperm, apply
+
+reading in files with read_tsv
+1 2 3 4 5 6 7 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 7 8 9 
+transcripts missing from tx2gene: 3046
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+[Thu Nov  4 09:31:26 2021]
+Finished job 1.
+2 of 3 steps (67%) done
+
+[Thu Nov  4 09:31:26 2021]
+localrule end:
+    input: output/neutrophiles_combined/trans/dea/DEA/transcript-level/deg_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/gene-level/deg_Hox-WT_Prim-WT.tsv
+    jobid: 0
+
+[Thu Nov  4 09:31:26 2021]
+Finished job 0.
+3 of 3 steps (100%) done
+Complete log: /home/max/projects/NGS/neutrophiles/RASflow/.snakemake/log/2021-11-04T092154.008072.snakemake.log

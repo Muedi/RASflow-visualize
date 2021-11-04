@@ -64,7 +64,7 @@ names(files) <- samples
 # ====================== prepare the tx2gene table ======================
 if (gene.level) {
     if (ENSEMBL) {
-        ensembl <- useEnsembl(biomart = "ensembl", dataset = dataset)
+        ensembl <- useEnsembl(biomart = "ensembl", dataset = dataset, mirror='uswest')
         datasets <- listDatasets(ensembl)
 
         attributes <- listAttributes(mart = ensembl)
@@ -75,7 +75,7 @@ if (gene.level) {
         files.noVersion <- file.path(input.path, samples, "quant_noVersion.sf")
         names(files.noVersion) <- samples
 
-        tx2gene <- getBM(attributes=c('ensembl_transcript_id', 'ensembl_gene_id'),
+        tx2gene <- getBM(attributes=c('ensembl_transcript_id', 'ensembl_gene_id'), 
                         filters = 'ensembl_transcript_id', values = trans.id, mart = ensembl)
     } else {
         tx2gene <- read.csv(tx2gene.file, header = FALSE, sep = "\t")
