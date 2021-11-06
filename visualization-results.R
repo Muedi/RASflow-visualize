@@ -19,7 +19,7 @@ norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_co
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/DEA/gene-level"
 out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/visualization"
 
-yaml.file <- yaml.load_file('configs/config_main_neutrophiles.yaml')
+yaml.file <- yaml.load_file('configs/config_main_combined.yaml')
 yaml.file.old <- yaml.load_file('configs/config_main_neutro_old.yaml')
 
 
@@ -34,7 +34,7 @@ controls <- yaml.file$CONTROL  # all groups used as control
 treats <- yaml.file$TREAT  # all groups used as treat, should correspond to control
 filter.need <- yaml.file$FILTER$yesOrNo
 pair.test <- yaml.file$PAIR
-meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_47removed.tsv"
+meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_combined_sets.tsv"
 meta.file.old <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_old.tsv"
 ENSEMBL <- yaml.file$ENSEMBL
 dataset <- yaml.file$EnsemblDataSet
@@ -129,6 +129,16 @@ joined_table.old <- tibble(rownames_to_column(joined_table.old, "ensembl"))
 # filter rows, with only counts below 2
 joined_table.old <- joined_table.old %>% filter_at(vars(-ensembl), any_vars(. > 2))
 
+# deseq2 normalization 
+
+colData = data.frame(samples.all, subject.all, group.all)
+design <- model.matrix(~group.all)
+dds <- DESeqDataSetFromTximport(txi_all, colData = colData, design = design)
+dds <- estimateSizeFactors(dds)
+normalized_counts_deseq2 <- counts(dds, normalized=TRUE)
+normalized_counts_deseq2 <- as_tibble(normalized_counts_deseq2, rownames="ensembl")
+
+
 
 # pca of all samples
 library(gridExtra)
@@ -136,16 +146,27 @@ library(grid)
 library(sjmisc)
 library(org.Mm.eg.db)
 
-df_pca <- prcomp(joined_table %>% column_to_rownames("ensembl") %>% replace(is.na(.), 0) %>% rotate_df()) # make ensembl the rownames again, replkace all nas with 0 and finally transpose matrix
+df_pca <- prcomp(joined_table %>% column_to_rownames("ensembl") %>% 
+                  dplyr::select( c("45__PU1_Neu_1712_S45_R1_001",
+                  "46__PU1_Neu_1715_S46_R1_001",
+                  "48__PU1_Neu_1718_S48_R1_001",
+                  "41__PU1_WT_1731_S41_R1_001",
+                  "42__PU1_WT_1691_S42_R1_001",
+                  "43__PU1_WT_1735_S43_R1_001",
+                  "44__PU1_WT_1734_S44_R1_001")) %>%
+                  replace(is.na(.), 0) %>% rotate_df()) # make ensembl the rownames again, replkace all nas with 0 and finally transpose matrix
 df_out <- as.data.frame(df_pca$x)
 # head(df_out)
 # add group
-df_out$group <- meta.data$group
+df_out$group <- (meta.data %>% as_tibble() %>% column_to_rownames("sample") )[rownames(df_out),"group"]
 # plt
 percentage <- round(df_pca$sdev / sum(df_pca$sdev) * 100, 2)
 percentage <- paste( colnames(df_out), "(", paste( as.character(percentage), "%", ")", sep="") )
-p<-ggplot(df_out,aes(x=PC1,y=PC2,color=group, label=row.names(df_out)))+geom_point()+ xlab(percentage[1]) + ylab(percentage[2])
-ggsave(filename = file.path(out.path, 'PCA_all_samples_length-scaled-tpm.png'))
+p<-ggplot(df_out,aes(x=PC1,y=PC2,color=group,label=substring(rownames(df_out), 1, 10) )) + 
+      geom_point() + 
+      geom_label_repel(hjust="inward", nudge_y = - 20000, max.overlaps=60) +
+      xlab(percentage[1]) + ylab(percentage[2])
+ggsave(filename = file.path(out.path, 'PCA_Prim_length-scaled-tpm.png'))
 
 
 # heatmap of gene expression
@@ -706,9 +727,20 @@ pheatmap(log2(mat + 1),
 dev.off() 
 
 
-# only wt vs everything
-combined_degs_wt <- combined_degs %>% filter( grepl("WT_", combined_degs$combination)) 
-heatmap_input <- tpm %>% filter(ensembl %in% combined_degs_wt$ensembl) 
+# only Hox
+# combined_degs_wt <- combined_degs %>% filter( grepl("WT_", combined_degs$combination)) 
+combined_degs_wt <- combined_degs %>% filter(!grepl("Prim", combined_degs$combination)) 
+# combined_degs_wt <- combined_degs_100 %>% filter(grepl("Hox-KO_v2_Hox-2KOs", combined_degs_100$combination)) 
+heatmap_input <- normalized_counts_deseq2 %>% 
+                      filter(ensembl %in% combined_degs_wt$ensembl) %>%
+                      # column_to_rownames("ensembl") %>% 
+                      dplyr::select(-c("45__PU1_Neu_1712_S45_R1_001",
+                      "46__PU1_Neu_1715_S46_R1_001",
+                      "48__PU1_Neu_1718_S48_R1_001",
+                      "41__PU1_WT_1731_S41_R1_001",
+                      "42__PU1_WT_1691_S42_R1_001",
+                      "43__PU1_WT_1735_S43_R1_001",
+                      "44__PU1_WT_1734_S44_R1_001") )
 combis <- combined_degs_wt %>% filter(ensembl %in% heatmap_input$ensembl) %>% dplyr::select(combination)
 combined_degs_wt$symbol <- convert.id2symbol(combined_degs_wt$ensembl)
 # get rid of duplications and (hopefully retain info on both combis
@@ -721,7 +753,7 @@ x <- distinct_ensembl %>% dplyr::select("combination", "ensembl")
 heatmap_input <- heatmap_input %>% left_join(x, by="ensembl")
 heatmap_input <- heatmap_input[order(heatmap_input$combination),]
 # heatmap of gene expression
-  mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select(-symbol, -combination) 
+  mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select( -combination) 
   #mat  <- mat - rowMeans(mat)
   # annotate mat
   ens.str <- rownames(mat)
@@ -737,13 +769,14 @@ heatmap_input <- heatmap_input[order(heatmap_input$combination),]
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
-png(file = file.path(out.path, 'degs-wt-combis-heatmap_all_samples.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
-pheatmap(log2(mat + 1), 
+png(file = file.path(out.path, 'degs-heatmap_Hox_deseq2.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
+pheatmap(log(mat +1) , 
           annotation_col = group.anno, 
           annotation_row = anno.genes,
           color=inferno(20), 
-          cluster_cols=F,
-          main="Top 20 differential genes, log transformed lengthScaledTPM") 
+          cluster_cols=T,
+          cluster_rows=T,
+          main="Top 20 differential genes, normalized DESEQ2") 
 dev.off() 
 
 
@@ -977,3 +1010,66 @@ save_combined_countplots(tpm, "Slpi")
 # S100a4
 save_combined_countplots(tpm, "S100a4")
 
+
+# Venn diagrams 
+# o   HoxWT (alt, denn wir haben auch nur die WT aus dem Paper) vs. HoxKO_v2
+# o   HoxKO_v2 vs. Hox2KO
+# =>
+#   o   HoxWT down mit Hox2Ko down
+#   o   Overlap von denen für GO BP und MF
+
+# genes down in hox WT in comparison to hoxKO_v2
+hoxWT_down <- joined_table %>% 
+                          filter(`padj_Hox-WT_Hox-KO_v2` < 0.05 ) %>% 
+                          filter(`log2FoldChange_Hox-WT_Hox-KO_v2` < 0 ) %>% 
+                          dplyr::select("log2FoldChange_Hox-WT_Hox-KO_v2", "ensembl")
+# genes down in HoxKO_v2 in comparison to Hox_2KOs
+hoxKO_v2_up <- joined_table %>% 
+                          filter(`padj_Hox-KO_v2_Hox-2KOs` < 0.05 ) %>% 
+                          filter(`log2FoldChange_Hox-KO_v2_Hox-2KOs` > 0 ) %>% 
+                          dplyr::select("log2FoldChange_Hox-KO_v2_Hox-2KOs", "ensembl")
+library(ggvenn)
+
+
+x <- list("Hox-WT vs HoxKO_v2 down" = hoxWT_down[["ensembl"]], 
+          "Hox-KO_v2 vs Hox-2KOs up" = hoxKO_v2_up[["ensembl"]])
+ggvenn(
+    x, 
+    fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
+    stroke_size = 0.5, set_name_size = 4
+    )
+ggsave(filename = file.path(out.path, paste('Venn_', 'HoxWT-down_Hox-2KO-down', '.png', sep = '')))
+
+# take intersect and do pathway analysis
+intersect_ <- intersect(hoxWT_down[["ensembl"]], hoxKO_v2_up[["ensembl"]])
+
+joined_dfs <- hoxWT_down %>% left_join(hoxKO_v2_up, by="ensembl") %>% filter(ensembl %in% intersect_) %>% dplyr::arrange(desc( `log2FoldChange_Hox-WT_Hox-KO_v2`))
+
+# for the universe take relevant samples and compute rowsums, remove rowsums < 10 
+universe = joined_table.2 %>% column_to_rownames("ensembl") %>% dplyr::select(c("35__HoxPU1_Neu_v2_1_S35_R1_001",
+                                        "36__HoxPU1_Neu_v2_2_S36_R1_001",
+                                        "37__HoxPU1_Neu_v2_3_S37_R1_001",
+                                        "41__PU1_WT_1731_S41_R1_001",
+                                        "42__PU1_WT_1691_S42_R1_001",
+                                        "43__PU1_WT_1735_S43_R1_001",
+                                        "44__PU1_WT_1734_S44_R1_001",
+                                        "38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001",
+                                        "39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001",
+                                        "40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001"
+                                        ))
+keep <- rowSums(universe) >= 3
+universe <- universe[keep, ]
+universe <- rownames(universe)
+library(clusterProfiler)
+ego <- enrichGO(gene          = joined_dfs[["ensembl"]],
+                  universe      = universe,
+                  OrgDb         = org.Mm.eg.db,
+                  keyType       = 'ENSEMBL',
+                  ont           = "Bp", # CC: cellular compartment, MF: molecul. function, BP: biol. process
+                  pAdjustMethod = "BH",
+                  pvalueCutoff  = 0.05,
+                  qvalueCutoff  = 0.05,
+                  readable      = TRUE)
+head(ego, 10)
+ego <- as_tibble(ego)
+write.xlsx(ego, file=file.path(out.path, paste("intersection_HoxWT-down_Hoix2KO-down_GO-enrichment.BP","genes.rowsums.gt.10.xlsx", sep=".")), row.names=F, overwrite=T)
