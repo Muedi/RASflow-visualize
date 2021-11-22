@@ -19,7 +19,7 @@ norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_co
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/DEA/gene-level"
 out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/visualization"
 
-yaml.file <- yaml.load_file('configs/config_main_combined.yaml')
+yaml.file <- yaml.load_file('configs/config_main.yaml')
 yaml.file.old <- yaml.load_file('configs/config_main_neutro_old.yaml')
 
 
@@ -151,7 +151,7 @@ df_pca <- prcomp(joined_table %>% column_to_rownames("ensembl") %>%
                   "46__PU1_Neu_1715_S46_R1_001",
                   "48__PU1_Neu_1718_S48_R1_001",
                   "41__PU1_WT_1731_S41_R1_001",
-                  "42__PU1_WT_1691_S42_R1_001",
+                  # "42__PU1_WT_1691_S42_R1_001",
                   "43__PU1_WT_1735_S43_R1_001",
                   "44__PU1_WT_1734_S44_R1_001")) %>%
                   replace(is.na(.), 0) %>% rotate_df()) # make ensembl the rownames again, replkace all nas with 0 and finally transpose matrix
@@ -167,6 +167,29 @@ p<-ggplot(df_out,aes(x=PC1,y=PC2,color=group,label=substring(rownames(df_out), 1
       geom_label_repel(hjust="inward", nudge_y = - 20000, max.overlaps=60) +
       xlab(percentage[1]) + ylab(percentage[2])
 ggsave(filename = file.path(out.path, 'PCA_Prim_length-scaled-tpm.png'))
+
+
+df_pca <- prcomp(joined_table %>% column_to_rownames("ensembl") %>% 
+                  dplyr::select( -c("45__PU1_Neu_1712_S45_R1_001",
+                  "46__PU1_Neu_1715_S46_R1_001",
+                  "48__PU1_Neu_1718_S48_R1_001",
+                  "41__PU1_WT_1731_S41_R1_001",
+                  # "42__PU1_WT_1691_S42_R1_001",
+                  "43__PU1_WT_1735_S43_R1_001",
+                  "44__PU1_WT_1734_S44_R1_001")) %>%
+                  replace(is.na(.), 0) %>% rotate_df()) # make ensembl the rownames again, replkace all nas with 0 and finally transpose matrix
+df_out <- as.data.frame(df_pca$x)
+# head(df_out)
+# add group
+df_out$group <- (meta.data %>% as_tibble() %>% column_to_rownames("sample") )[rownames(df_out),"group"]
+# plt
+percentage <- round(df_pca$sdev / sum(df_pca$sdev) * 100, 2)
+percentage <- paste( colnames(df_out), "(", paste( as.character(percentage), "%", ")", sep="") )
+p<-ggplot(df_out,aes(x=PC1,y=PC2,color=group,label=substring(rownames(df_out), 1, 10) )) + 
+      geom_point() + 
+      geom_label_repel(hjust="inward", nudge_y = - 20000, max.overlaps=60) +
+      xlab(percentage[1]) + ylab(percentage[2])
+ggsave(filename = file.path(out.path, 'PCA_Hox_length-scaled-tpm.png'))
 
 
 # heatmap of gene expression
@@ -441,7 +464,7 @@ for (i in 1:length(controls)) {
 
   # Filtering
   if (filter.need) {
-    keep <- rowSums(counts(dds)) >= 10
+    keep <- rowSums(counts(dds)) >= 20
     dds <- dds[keep,]
   }
   ## specify the control group
@@ -625,13 +648,15 @@ for (i in 1:length(controls)) {
 
   tibb.dea <- as_tibble(resOrdered , rownames="ensembl")
   tibb.dea <- tibb.dea[!is.na(tibb.dea$padj),]
+
+
   # tibb.dea <- tibb.dea[tibb.dea$padj < 0.05,]
   # tibb.dea <- tibb.dea[abs(tibb.dea$log2FoldChange) > 2,]
   to_join <- tibb.dea %>% dplyr::select("ensembl", "log2FoldChange", "padj")
   to_join <- to_join %>% mutate("DEG_lfc>2" = padj < 0.05 & (log2FoldChange>2 | log2FoldChange < -2) )
   to_join <- to_join %>% rename_with(~ paste(., control, treat, sep="_"), -"ensembl")
   #tibb.dea <- tibb.dea %>% column_to_rownames("symbol")
-
+  
   # colnames(tibb.dea)
   # if (is_empty(all.dea.tibble)) {
   #   all.dea.tibble <- tibb.dea
@@ -644,6 +669,9 @@ for (i in 1:length(controls)) {
   joined_table <- joined_table %>%
       full_join(to_join, by = "ensembl")
   
+  # save table to check for log_fold_changes 
+  write.xlsx(tibb.dea %>% full_join(as_tibble(countdata, rownames="ensembl")  , by="ensembl"), file=file.path(out.path, paste("table_degs", control, treat, ".xlsx", sep='_')), row.names=F, overwrite=T)
+
   # plot fold changes in genomic space
   # takes quite long
   # library(apeglm)
@@ -738,7 +766,7 @@ heatmap_input <- normalized_counts_deseq2 %>%
                       "46__PU1_Neu_1715_S46_R1_001",
                       "48__PU1_Neu_1718_S48_R1_001",
                       "41__PU1_WT_1731_S41_R1_001",
-                      "42__PU1_WT_1691_S42_R1_001",
+                      # "42__PU1_WT_1691_S42_R1_001",
                       "43__PU1_WT_1735_S43_R1_001",
                       "44__PU1_WT_1734_S44_R1_001") )
 combis <- combined_degs_wt %>% filter(ensembl %in% heatmap_input$ensembl) %>% dplyr::select(combination)
@@ -964,7 +992,7 @@ samples_subgroup_WT_KOcellline = c("35__HoxPU1_Neu_v2_1_S35_R1_001",
 "36__HoxPU1_Neu_v2_2_S36_R1_001",
 "37__HoxPU1_Neu_v2_3_S37_R1_001",
 "41__PU1_WT_1731_S41_R1_001",
-"42__PU1_WT_1691_S42_R1_001",
+# "42__PU1_WT_1691_S42_R1_001",
 "43__PU1_WT_1735_S43_R1_001",
 "44__PU1_WT_1734_S44_R1_001")
 save_combined_countplots_subset(tpm, "Rnf213", samples_subgroup_WT_KOcellline, "WT_KO-PU-cellline")
@@ -974,7 +1002,7 @@ samples_subgroup_WT_KO = c("45__PU1_Neu_1712_S45_R1_001",
 "46__PU1_Neu_1715_S46_R1_001",
 "48__PU1_Neu_1718_S48_R1_001",
 "41__PU1_WT_1731_S41_R1_001",
-"42__PU1_WT_1691_S42_R1_001",
+# "42__PU1_WT_1691_S42_R1_001",
 "43__PU1_WT_1735_S43_R1_001",
 "44__PU1_WT_1734_S44_R1_001")
 save_combined_countplots_subset(tpm, "Rnf213", samples_subgroup_WT_KO, "WT_KO-PU")
@@ -1021,43 +1049,44 @@ save_combined_countplots(tpm, "S100a4")
 # genes down in hox WT in comparison to hoxKO_v2
 hoxWT_down <- joined_table %>% 
                           filter(`padj_Hox-WT_Hox-KO_v2` < 0.05 ) %>% 
-                          filter(`log2FoldChange_Hox-WT_Hox-KO_v2` < 0 ) %>% 
+                          filter(`log2FoldChange_Hox-WT_Hox-KO_v2` > 0 ) %>% 
                           dplyr::select("log2FoldChange_Hox-WT_Hox-KO_v2", "ensembl")
 # genes down in HoxKO_v2 in comparison to Hox_2KOs
-hoxKO_v2_up <- joined_table %>% 
+hox2KO_down <- joined_table %>% 
                           filter(`padj_Hox-KO_v2_Hox-2KOs` < 0.05 ) %>% 
-                          filter(`log2FoldChange_Hox-KO_v2_Hox-2KOs` > 0 ) %>% 
+                          filter(`log2FoldChange_Hox-KO_v2_Hox-2KOs` < 0 ) %>% 
                           dplyr::select("log2FoldChange_Hox-KO_v2_Hox-2KOs", "ensembl")
 library(ggvenn)
 
 
 x <- list("Hox-WT vs HoxKO_v2 down" = hoxWT_down[["ensembl"]], 
-          "Hox-KO_v2 vs Hox-2KOs up" = hoxKO_v2_up[["ensembl"]])
+          "Hox-KO_v2 vs Hox-2KOs up" = hox2KO_down[["ensembl"]])
 ggvenn(
     x, 
     fill_color = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF"),
     stroke_size = 0.5, set_name_size = 4
     )
-ggsave(filename = file.path(out.path, paste('Venn_', 'HoxWT-down_Hox-2KO-down', '.png', sep = '')))
+# ggsave(filename = file.path(out.path, paste('Venn_', 'HoxWT-down_Hox-2KO-down_cutoff1.5', '.png', sep = '')))
 
 # take intersect and do pathway analysis
-intersect_ <- intersect(hoxWT_down[["ensembl"]], hoxKO_v2_up[["ensembl"]])
+intersect_ <- intersect(hoxWT_down[["ensembl"]], hox2KO_down[["ensembl"]])
 
-joined_dfs <- hoxWT_down %>% left_join(hoxKO_v2_up, by="ensembl") %>% filter(ensembl %in% intersect_) %>% dplyr::arrange(desc( `log2FoldChange_Hox-WT_Hox-KO_v2`))
-
+joined_dfs <- hoxWT_down %>% left_join(hox2KO_down, by="ensembl") %>% filter(ensembl %in% intersect_) %>% dplyr::arrange( `log2FoldChange_Hox-WT_Hox-KO_v2`)
+joined_dfs["symbol"] = convert.id2symbol( joined_dfs[["ensembl"]] )
+write.xlsx(joined_dfs, file=file.path(out.path, "intersectWT_down-vs-2KOs_down.xlsx"), row.names=F, overwrite=T)
 # for the universe take relevant samples and compute rowsums, remove rowsums < 10 
 universe = joined_table.2 %>% column_to_rownames("ensembl") %>% dplyr::select(c("35__HoxPU1_Neu_v2_1_S35_R1_001",
                                         "36__HoxPU1_Neu_v2_2_S36_R1_001",
                                         "37__HoxPU1_Neu_v2_3_S37_R1_001",
                                         "41__PU1_WT_1731_S41_R1_001",
-                                        "42__PU1_WT_1691_S42_R1_001",
+                                        # "42__PU1_WT_1691_S42_R1_001",
                                         "43__PU1_WT_1735_S43_R1_001",
                                         "44__PU1_WT_1734_S44_R1_001",
                                         "38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001",
                                         "39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001",
                                         "40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001"
                                         ))
-keep <- rowSums(universe) >= 3
+keep <- rowSums(universe) >= 10
 universe <- universe[keep, ]
 universe <- rownames(universe)
 library(clusterProfiler)
@@ -1065,11 +1094,94 @@ ego <- enrichGO(gene          = joined_dfs[["ensembl"]],
                   universe      = universe,
                   OrgDb         = org.Mm.eg.db,
                   keyType       = 'ENSEMBL',
-                  ont           = "Bp", # CC: cellular compartment, MF: molecul. function, BP: biol. process
+                  ont           = "MF", # CC: cellular compartment, MF: molecul. function, BP: biol. process
                   pAdjustMethod = "BH",
                   pvalueCutoff  = 0.05,
                   qvalueCutoff  = 0.05,
                   readable      = TRUE)
 head(ego, 10)
 ego <- as_tibble(ego)
-write.xlsx(ego, file=file.path(out.path, paste("intersection_HoxWT-down_Hoix2KO-down_GO-enrichment.BP","genes.rowsums.gt.10.xlsx", sep=".")), row.names=F, overwrite=T)
+write.xlsx(ego, file=file.path(out.path, paste("intersection_HoxWT-down_Hoix2KO-down_GO-enrichment.MF","genes.rowsums.gt.10.xlsx", sep=".")), row.names=F, overwrite=T)
+
+# intersect vs cluster genes:
+# counts and enrichment
+library(fgsea)
+library(data.table)                 
+
+# gsea for Clusters
+# get list of clusters and genes, to use as pathways for fgsea
+clust_genes <- old_expression_clusters[c("Cluster", "Name")]
+clust_genes$entrez = mapIds(org.Mm.eg.db,
+                    keys=clust_genes$Name, 
+                    column="ENTREZID",
+                    keytype="SYMBOL",
+                    multiVals="first")
+clusters <-unique(clust_genes[["Cluster"]]) 
+clust_pathways_symbols <- list(
+  clust_genes[clust_genes$Cluster == clusters[1],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[2],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[3],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[4],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[5],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[2] | clust_genes$Cluster == clusters[3],"Name"],
+  clust_genes[clust_genes$Cluster == clusters[4] | clust_genes$Cluster == clusters[5],"Name"]
+)
+names(clust_pathways_symbols) <- c(clusters , "I+II", "III+IV")
+
+joined_dfs$entrez = mapIds(org.Mm.eg.db,
+                    keys=joined_dfs$symbol, 
+                    column="ENTREZID",
+                    keytype="SYMBOL",
+                    multiVals="first")
+
+# for fgsea: needs to be sorted from - to +
+
+ranks <- joined_dfs[["log2FoldChange_Hox-WT_Hox-KO_v2"]]
+names(ranks) <- joined_dfs[["symbol"]]
+fgseaRes <- fgsea(pathways = clust_pathways_symbols, 
+                  stats    = ranks,
+                  nperm=1000)
+fwrite(fgseaRes, file = file.path(out.path, paste('fgsea_results_clusters_vs_intersectHoxis_WT_down_2ko_Down', control, '_', treat, '.tsv', sep = '')), sep = "\t", sep2=c("", " ", ""))
+
+plotEnrichment(clust_pathways_symbols[["II"]],
+               ranks) + labs(title="Cluster II")
+ggsave(filename = file.path(out.path, paste('Enrichplot_clust_II_', 'HoxWT-down_Hox-2KO-down', '.png', sep = '')))
+
+# immune regulation gene sets
+immune_sets <- gmtPathways("/home/max/projects/NGS/neutrophiles/genesets_immune_regulation_MM.gmt")
+names(ranks) <- toupper(joined_dfs[["symbol"]])
+
+fgseaRes <- fgsea(pathways = immune_sets, 
+                  stats    = ranks,
+                  nperm=1000)
+
+fgseaRes_tibb <- fgseaRes %>% as_tibble() %>% dplyr::arrange(padj) 
+# fwrite(fgseaRes, file = file.path(out.path, paste('fgsea_results_clusters_vs_intersectHoxis_WT_down_2ko_Down', control, '_', treat, '.tsv', sep = '')), sep = "\t", sep2=c("", " ", ""))
+
+
+# overlaps of old clusters and intersect:
+# genes down in hox WT in comparison to hoxKO_v2
+hox2KO_up <- joined_table %>% 
+                          filter(`padj_Hox-KO_v2_Hox-2KOs` > 0.05 ) %>% 
+                          filter(`log2FoldChange_Hox-KO_v2_Hox-2KOs` > 0 ) %>% 
+                          dplyr::select("log2FoldChange_Hox-KO_v2_Hox-2KOs", "ensembl", "symbol")
+# genes down in HoxKO_v2 in comparison to Hox_2KOs
+hox2KO_down <- joined_table %>% 
+                          filter(`padj_Hox-KO_v2_Hox-2KOs` > 0.05 ) %>% 
+                          filter(`log2FoldChange_Hox-KO_v2_Hox-2KOs` < 0 ) %>% 
+                          dplyr::select("log2FoldChange_Hox-KO_v2_Hox-2KOs", "ensembl", "symbol")
+
+                          # take intersect and do pathway analysis
+intersect_ <- intersect(hoxWT_down[["ensembl"]], hox2KO_down[["ensembl"]])
+intersect_sym <- convert.id2symbol(intersect_)
+
+for (i in 1:length(names(clust_pathways_symbols))) {
+  print( names(clust_pathways_symbols)[i] )
+  print( length( intersect(hox2KO_down[["symbol"]], clust_pathways_symbols[[i]]) ) )
+  print( intersect(hox2KO_down[["symbol"]], clust_pathways_symbols[[i]]) ) 
+  
+  write( paste("-----> Clust: ", names(clust_pathways_symbols)[i], sep="" ), file=file.path(out.path, "intersection_Hox2KO-down_Clusts.txt"), append=T)
+  write( paste("-----> Sum: ", length( intersect(hox2KO_down[["symbol"]], clust_pathways_symbols[[i]]) ), sep=""), file=file.path(out.path, "intersection_Hox2KO-down_Clusts.txt"), append=T)
+  write( "-----> Genes:", file=file.path(out.path, "intersection_Hox2KO-down_Clusts.txt"), append=T)
+  write( intersect(hox2KO_down[["symbol"]], clust_pathways_symbols[[i]]), file=file.path(out.path, "intersection_Hox2KO-down_Clusts.txt"), append=T)
+}

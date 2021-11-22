@@ -81,8 +81,8 @@ DEATOOL: DESeq2  # "edgeR" or "DESeq2"? DESeq2 is recommended for transcriptome-
 PAIR: FALSE  # Is this a pair test or not? ("TRUE" or "FALSE")
 
 ## the comparison(s) you want to do. If multiple comparisons, specify each pair (CONTROL & TREAT) in order respectively
-CONTROL: ["Hox-WT", "Hox-WT", "Hox-WT", "Hox-WT", "Prim-WT", "Hox-KO_v2", "Hox-KO_v2"]
-TREAT: ["Prim-WT", "Hox-KO_v2", "Hox-KO", "Hox-2KOs", "Prim-KO", "Hox-KO", "Hox-2KOs"]
+CONTROL: ["Hox-WT", "Hox-WT", "Hox-WT", "Prim-WT", "Hox-KO_v2"]
+TREAT: ["Prim-WT", "Hox-KO_v2", "Hox-2KOs", "Prim-KO", "Hox-2KOs"]
 ## length of 'CONTROL' should agree with that of 'TREAT'
 ## what you fill in there should agree with the "group" column in metadata.tsv
 

@@ -372,3 +372,31 @@ Time of running transcripts quantification:0:00:00
 Time of running DEA transcriptome based:0:09:13
 Time of running visualization:0:05:57
 Finish time: Thu Nov  4 11:08:57 2021
+
+Project name: neutrophiles_combined
+Start time: Wed Nov 10 11:29:54 2021
+Time of running transcripts quantification:0:41:44
+Time of running DEA transcriptome based:0:03:13
+Time of running visualization:0:00:00
+Finish time: Wed Nov 10 12:14:53 2021
+
+Project name: neutrophiles_combined
+Start time: Wed Nov 10 12:18:59 2021
+Time of running transcripts quantification:0:00:00
+Time of running DEA transcriptome based:0:06:37
+Time of running visualization:0:04:04
+Finish time: Wed Nov 10 12:29:42 2021
+
+Project name: neutrophiles_combined
+Start time: Thu Nov 11 11:15:19 2021
+Time of running transcripts quantification:0:00:00
+Time of running DEA transcriptome based:0:06:29
+Time of running visualization:0:04:04
+Finish time: Thu Nov 11 11:25:54 2021
+
+Project name: neutrophiles_combined
+Start time: Thu Nov 11 14:32:59 2021
+Time of running transcripts quantification:0:36:52
+Time of running DEA transcriptome based:0:06:26
+Time of running visualization:0:04:31
+Finish time: Thu Nov 11 15:20:50 2021
