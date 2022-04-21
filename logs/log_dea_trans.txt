@@ -9,35 +9,35 @@ Job counts:
 	1	end
 	3
 
-[Thu Nov 11 15:09:52 2021]
+[Wed Jan 12 17:38:43 2022]
 rule combineSamples:
-    input: output/neutrophiles_combined/trans/quant/35__HoxPU1_Neu_v2_1_S35_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/36__HoxPU1_Neu_v2_2_S36_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/37__HoxPU1_Neu_v2_3_S37_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/41__PU1_WT_1731_S41_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/43__PU1_WT_1735_S43_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/44__PU1_WT_1734_S44_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/45__PU1_Neu_1712_S45_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/46__PU1_Neu_1715_S46_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/48__PU1_Neu_1718_S48_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751062_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751063_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751064_1/quant.sf, configs/metadata_combined_sets.tsv
-    output: output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_gene_norm.tsv
+    input: output/neutrophiles_combined/trans/quant/35__HoxPU1_Neu_v2_1_S35_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/36__HoxPU1_Neu_v2_2_S36_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/37__HoxPU1_Neu_v2_3_S37_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/38__HoxPU1_Neu_creEts2_c3_KO1_1_S38_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/39__HoxPU1_Neu_creEts2_c3_KO1_2_S39_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/40__HoxPU1_Neu_creEts2_c3_KO1_3_S40_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/41__PU1_WT_1731_S41_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/43__PU1_WT_1735_S43_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/44__PU1_WT_1734_S44_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/45__PU1_Neu_1712_S45_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/46__PU1_Neu_1715_S46_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/48__PU1_Neu_1718_S48_R1_001/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751062_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751063_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751064_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751065_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751066_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751067_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751068_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751069_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751070_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751071_1/quant.sf, output/neutrophiles_combined/trans/quant/SRR6751072_1/quant.sf, configs/metadata_combined_sets.tsv
+    output: output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO-Ca_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT-Ca_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO-Ca_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT-Ca_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_gene_norm.tsv
     jobid: 2
 
 reading in files with read_tsv
-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 
 reading in files with read_tsv
-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 
 reading in files with read_tsv
-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
-transcripts missing from tx2gene: 3046
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
 reading in files with read_tsv
-1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 
-transcripts missing from tx2gene: 3046
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
-[Thu Nov 11 15:13:39 2021]
+[Wed Jan 12 17:45:02 2022]
 Finished job 2.
 1 of 3 steps (33%) done
 
-[Thu Nov 11 15:13:39 2021]
+[Wed Jan 12 17:45:02 2022]
 rule DEA:
-    input: output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_gene_norm.tsv
+    input: output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO-Ca_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT-Ca_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_trans_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-2KOs_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO-Ca_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-KO_v2_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Hox-WT-Ca_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-KO_gene_norm.tsv, output/neutrophiles_combined/trans/dea/countGroup/Prim-WT_gene_norm.tsv
     output: output/neutrophiles_combined/trans/dea/DEA/transcript-level/dea_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/transcript-level/deg_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/gene-level/dea_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/gene-level/deg_Hox-WT_Prim-WT.tsv
     jobid: 1
 
@@ -125,7 +125,7 @@ final dispersion estimates
 fitting model and testing
 reading in files with read_tsv
 1 2 3 4 5 6 
-transcripts missing from tx2gene: 3046
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
@@ -151,7 +151,7 @@ final dispersion estimates
 fitting model and testing
 reading in files with read_tsv
 1 2 3 4 5 6 
-transcripts missing from tx2gene: 3046
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
@@ -177,7 +177,7 @@ final dispersion estimates
 fitting model and testing
 reading in files with read_tsv
 1 2 3 4 5 6 
-transcripts missing from tx2gene: 3046
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
@@ -203,7 +203,7 @@ final dispersion estimates
 fitting model and testing
 reading in files with read_tsv
 1 2 3 4 5 6 
-transcripts missing from tx2gene: 3046
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
@@ -229,7 +229,7 @@ final dispersion estimates
 fitting model and testing
 reading in files with read_tsv
 1 2 3 4 5 6 
-transcripts missing from tx2gene: 3046
+transcripts missing from tx2gene: 3056
 summarizing abundance
 summarizing counts
 summarizing length
@@ -242,16 +242,132 @@ gene-wise dispersion estimates
 mean-dispersion relationship
 final dispersion estimates
 fitting model and testing
-[Thu Nov 11 15:16:18 2021]
+reading in files with read_tsv
+1 2 3 4 5 6 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+-- note: fitType='parametric', but the dispersion trend was not well captured by the
+   function: y = a/x + b, and a local regression fit was automatically substituted.
+   specify fitType='local' or 'mean' to avoid this message next time.
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 
+transcripts missing from tx2gene: 3056
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+-- note: fitType='parametric', but the dispersion trend was not well captured by the
+   function: y = a/x + b, and a local regression fit was automatically substituted.
+   specify fitType='local' or 'mean' to avoid this message next time.
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 
+transcripts missing from tx2gene: 3056
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+-- note: fitType='parametric', but the dispersion trend was not well captured by the
+   function: y = a/x + b, and a local regression fit was automatically substituted.
+   specify fitType='local' or 'mean' to avoid this message next time.
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 
+transcripts missing from tx2gene: 3056
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+-- note: fitType='parametric', but the dispersion trend was not well captured by the
+   function: y = a/x + b, and a local regression fit was automatically substituted.
+   specify fitType='local' or 'mean' to avoid this message next time.
+final dispersion estimates
+fitting model and testing
+reading in files with read_tsv
+1 2 3 4 5 6 
+transcripts missing from tx2gene: 3056
+summarizing abundance
+summarizing counts
+summarizing length
+using counts and average transcript lengths from tximport
+using supplied model matrix
+estimating size factors
+using 'avgTxLength' from assays(dds), correcting for library size
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+[Wed Jan 12 17:49:36 2022]
 Finished job 1.
 2 of 3 steps (67%) done
 
-[Thu Nov 11 15:16:18 2021]
+[Wed Jan 12 17:49:36 2022]
 localrule end:
     input: output/neutrophiles_combined/trans/dea/DEA/transcript-level/deg_Hox-WT_Prim-WT.tsv, output/neutrophiles_combined/trans/dea/DEA/gene-level/deg_Hox-WT_Prim-WT.tsv
     jobid: 0
 
-[Thu Nov 11 15:16:18 2021]
+[Wed Jan 12 17:49:36 2022]
 Finished job 0.
 3 of 3 steps (100%) done
-Complete log: /home/max/projects/NGS/neutrophiles/RASflow/.snakemake/log/2021-11-11T150952.259460.snakemake.log
+Complete log: /home/max/projects/NGS/neutrophiles/RASflow/.snakemake/log/2022-01-12T173842.685465.snakemake.log

@@ -15,6 +15,10 @@ library(viridis)
 library("ggbeeswarm")
 library(EnhancedVolcano)
 library(openxlsx)
+library(fgsea)
+library(data.table)                 
+
+
 norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/countGroup"
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/DEA/gene-level"
 out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/visualization"
@@ -578,7 +582,21 @@ for (i in 1:length(controls)) {
   sym.str <- convert.id2symbol(ens.str)
   # sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   res$symbol <- sym.str
+  # fgsea immune sets
+  
+  ranks_input <- as_tibble(res)  %>% 
+    dplyr::select("symbol", "stat") %>% 
+    na.omit() %>% 
+    distinct() %>% 
+    group_by(symbol) %>% 
+    summarize(stat=mean(stat))
+  ranks_input <- deframe(ranks_input)
+  names(ranks_input) <- toupper(names(ranks_input))
+  immune_sets <- gmtPathways("/home/max/projects/NGS/neutrophiles/genesets_immune_regulation_MM.gmt")
+  fgseaRes <- fgsea(pathways = immune_sets, 
+                    stats    = ranks_input, nperm=1000)
 
+  fwrite(fgseaRes, file = file.path(out.path, paste('fgsea_results_immunesets_', control, '_', treat, '.tsv', sep = '')), sep = "\t", sep2=c("", " ", ""))
   # vulcano <- 
   #png(file = file.path(out.path, paste('volcano_plot_', control, '_', treat, '.png', sep = '')), width=750, height=500,  title = paste('Volcano plot: ', control, treat, sep = ' '))
   EnhancedVolcano(res,
@@ -1105,8 +1123,6 @@ write.xlsx(ego, file=file.path(out.path, paste("intersection_HoxWT-down_Hoix2KO-
 
 # intersect vs cluster genes:
 # counts and enrichment
-library(fgsea)
-library(data.table)                 
 
 # gsea for Clusters
 # get list of clusters and genes, to use as pathways for fgsea

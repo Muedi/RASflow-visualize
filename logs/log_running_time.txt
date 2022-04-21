@@ -400,3 +400,59 @@ Time of running transcripts quantification:0:36:52
 Time of running DEA transcriptome based:0:06:26
 Time of running visualization:0:04:31
 Finish time: Thu Nov 11 15:20:50 2021
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 10:19:12 2022
+Time of running transcripts quantification:0:00:00
+Time of running DEA transcriptome based:0:00:00
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 10:19:14 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 10:20:21 2022
+Time of running transcripts quantification:0:00:00
+Time of running DEA transcriptome based:0:00:00
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 10:20:22 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 10:20:59 2022
+Time of running transcripts quantification:0:10:54
+Time of running DEA transcriptome based:0:15:01
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 10:46:56 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 11:00:29 2022
+Time of running transcripts quantification:0:01:46
+Time of running DEA transcriptome based:5:21:59
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 16:24:15 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 16:24:31 2022
+Time of running transcripts quantification:0:01:54
+Time of running DEA transcriptome based:0:02:23
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 16:28:49 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 16:30:01 2022
+Time of running transcripts quantification:0:01:49
+Time of running DEA transcriptome based:0:04:10
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 16:36:01 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 16:46:47 2022
+Time of running transcripts quantification:0:00:00
+Time of running DEA transcriptome based:0:00:00
+Time of running visualization:0:00:00
+Finish time: Wed Jan 12 16:46:48 2022
+
+Project name: neutrophiles_combined
+Start time: Wed Jan 12 16:49:54 2022
+Time of running transcripts quantification:0:48:48
+Time of running DEA transcriptome based:0:10:53
+Time of running visualization:0:06:53
+Finish time: Wed Jan 12 17:56:29 2022
