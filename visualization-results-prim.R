@@ -19,9 +19,10 @@ library(fgsea)
 library(data.table)                 
 
 
-norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/countGroup"
-dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/DEA/gene-level"
-out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_combined/trans/dea/visualization"
+norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_primary/trans/dea/countGroup"
+dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_primary/trans/dea/DEA/gene-level"
+out.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_primary/trans/dea/visualization"
+dir.create(file.path(out.path), showWarnings = FALSE)
 
 yaml.file <- yaml.load_file('configs/config_main.yaml')
 yaml.file.old <- yaml.load_file('configs/config_main_neutro_old.yaml')
@@ -38,7 +39,7 @@ controls <- yaml.file$CONTROL  # all groups used as control
 treats <- yaml.file$TREAT  # all groups used as treat, should correspond to control
 filter.need <- yaml.file$FILTER$yesOrNo
 pair.test <- yaml.file$PAIR
-meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_combined_sets.tsv"
+meta.file <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_primary.tsv"
 meta.file.old <- "/home/max/projects/NGS/neutrophiles/RASflow/configs/metadata_old.tsv"
 ENSEMBL <- yaml.file$ENSEMBL
 dataset <- yaml.file$EnsemblDataSet
@@ -151,50 +152,31 @@ library(sjmisc)
 library(org.Mm.eg.db)
 
 df_pca <- prcomp(joined_table %>% column_to_rownames("ensembl") %>% 
-                  dplyr::select( c("45__PU1_Neu_1712_S45_R1_001",
-                  "46__PU1_Neu_1715_S46_R1_001",
-                  "48__PU1_Neu_1718_S48_R1_001",
-                  "41__PU1_WT_1731_S41_R1_001",
-                  # "42__PU1_WT_1691_S42_R1_001",
-                  "43__PU1_WT_1735_S43_R1_001",
-                  "44__PU1_WT_1734_S44_R1_001")) %>%
+                  # dplyr::select( c("45__PU1_Neu_1712_S45_R1_001",
+                  # "46__PU1_Neu_1715_S46_R1_001",
+                  # "48__PU1_Neu_1718_S48_R1_001",
+                  # "41__PU1_WT_1731_S41_R1_001",
+                  # # "42__PU1_WT_1691_S42_R1_001",
+                  # "43__PU1_WT_1735_S43_R1_001",
+                  # "44__PU1_WT_1734_S44_R1_001")) %>%
                   replace(is.na(.), 0) %>% rotate_df()) # make ensembl the rownames again, replkace all nas with 0 and finally transpose matrix
 df_out <- as.data.frame(df_pca$x)
 # head(df_out)
 # add group
 df_out$group <- (meta.data %>% as_tibble() %>% column_to_rownames("sample") )[rownames(df_out),"group"]
+df_out$treat <- (meta.data %>% as_tibble() %>% column_to_rownames("sample") )[rownames(df_out),"subject"]
 # plt
 percentage <- round(df_pca$sdev / sum(df_pca$sdev) * 100, 2)
 percentage <- paste( colnames(df_out), "(", paste( as.character(percentage), "%", ")", sep="") )
-p<-ggplot(df_out,aes(x=PC1,y=PC2,color=group,label=substring(rownames(df_out), 1, 10) )) + 
+p<-ggplot(df_out,aes(x=PC1,
+                    y=PC2,
+                    color=group,
+                    shape=treat,
+                    label=substring(rownames(df_out), 1, 10) )) + 
       geom_point() + 
       geom_label_repel(hjust="inward", nudge_y = - 20000, max.overlaps=60) +
       xlab(percentage[1]) + ylab(percentage[2])
 ggsave(filename = file.path(out.path, 'PCA_Prim_length-scaled-tpm.png'))
-
-
-df_pca <- prcomp(joined_table %>% column_to_rownames("ensembl") %>% 
-                  dplyr::select( -c("45__PU1_Neu_1712_S45_R1_001",
-                  "46__PU1_Neu_1715_S46_R1_001",
-                  "48__PU1_Neu_1718_S48_R1_001",
-                  "41__PU1_WT_1731_S41_R1_001",
-                  # "42__PU1_WT_1691_S42_R1_001",
-                  "43__PU1_WT_1735_S43_R1_001",
-                  "44__PU1_WT_1734_S44_R1_001")) %>%
-                  replace(is.na(.), 0) %>% rotate_df()) # make ensembl the rownames again, replkace all nas with 0 and finally transpose matrix
-df_out <- as.data.frame(df_pca$x)
-# head(df_out)
-# add group
-df_out$group <- (meta.data %>% as_tibble() %>% column_to_rownames("sample") )[rownames(df_out),"group"]
-# plt
-percentage <- round(df_pca$sdev / sum(df_pca$sdev) * 100, 2)
-percentage <- paste( colnames(df_out), "(", paste( as.character(percentage), "%", ")", sep="") )
-p<-ggplot(df_out,aes(x=PC1,y=PC2,color=group,label=substring(rownames(df_out), 1, 10) )) + 
-      geom_point() + 
-      geom_label_repel(hjust="inward", nudge_y = - 20000, max.overlaps=60) +
-      xlab(percentage[1]) + ylab(percentage[2])
-ggsave(filename = file.path(out.path, 'PCA_Hox_length-scaled-tpm.png'))
-
 
 # heatmap of gene expression
 topVarGenes <- head(order(rowVars(as.matrix(joined_table %>% column_to_rownames("ensembl"))), decreasing = TRUE), 1000)
@@ -210,7 +192,7 @@ topVarGenes <- head(order(rowVars(as.matrix(joined_table %>% column_to_rownames(
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -236,7 +218,7 @@ topVarGenes <- head(order(rowVars(as.matrix(joined_table %>% column_to_rownames(
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -425,10 +407,10 @@ exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster =
 ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.old.png'))
 
 # comparison to proteomics expression
-diff_express_protein_old <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
-diff_express_protein_old <- as_tibble(diff_express_protein_old)
-diff_express_protein_old <- diff_express_protein_old %>% separate_rows(Gene_name)
-#diff_express_protein_old <- diff_express_protein_old %>% mutate()
+diff_express_protein_prot <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
+diff_express_protein_prot <- as_tibble(diff_express_protein_prot)
+diff_express_protein_prot <- diff_express_protein_prot %>% separate_rows(Gene_name)
+#diff_express_protein_prot <- diff_express_protein_prot %>% mutate()
 
 
 # combined_degs holds top X of all comparisons 
@@ -652,7 +634,7 @@ for (i in 1:length(controls)) {
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% filter(group %in% c(control, treat)) %>% column_to_rownames("sample") %>% dplyr::select("group")
+  group.anno <- meta.data %>% filter(group %in% c(control, treat)) %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
   # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
   png(file = file.path(out.path, paste('top100_degs',control, treat ,'heatmap.png', sep='_')),width=3300, height=3600, res=300)
@@ -731,7 +713,7 @@ heatmap_input <- heatmap_input[order(heatmap_input$combination),]
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -758,7 +740,7 @@ dev.off()
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -811,7 +793,7 @@ heatmap_input <- heatmap_input[order(heatmap_input$combination),]
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -858,7 +840,7 @@ sym.str <- heatmap_input$symbol
 sym.str[is.na(sym.str)] <- heatmap_input$ensembl
 sym.str <- make.unique(sym.str)
 rownames(mat) <- sym.str
-group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
 anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 png(file = file.path(out.path, 'degs-wt-combis-heatmap_all_samples_top1500.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
@@ -915,7 +897,7 @@ sym.str <- heatmap_input$symbol
 sym.str[is.na(sym.str)] <- heatmap_input$ensembl
 sym.str <- make.unique(sym.str)
 rownames(mat) <- sym.str
-group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
 anno.genes <- clust_genes %>% as_tibble() %>% column_to_rownames("Name") 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 png(file = file.path(out.path, 'degs-old-clusters-heatmap_all_samples_top1500.png'),width=3300, height=3600, res=300,  title = 'Old cluster genes')

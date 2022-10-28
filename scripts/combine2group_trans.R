@@ -64,7 +64,7 @@ names(files) <- samples
 # ====================== prepare the tx2gene table ======================
 if (gene.level) {
     if (ENSEMBL) {
-        ensembl <- useEnsembl(biomart = "ensembl", dataset = dataset, mirror='uswest')
+        ensembl <- useEnsembl(biomart = "ensembl", dataset = dataset, mirror='www')
         datasets <- listDatasets(ensembl)
 
         attributes <- listAttributes(mart = ensembl)
@@ -138,5 +138,4 @@ for (group in unique(group.all)) {
     write.table(group.count.gene.tpm, output.file.gene.norm, sep = '\t', quote = FALSE, row.names = TRUE, col.names = TRUE)
   }
 }
-
 

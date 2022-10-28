@@ -1,7 +1,7 @@
 # Please check the parameters, and adjust them according to your circumstance
 
 # Project name
-PROJECT: neutrophiles_combined
+PROJECT: neutrophiles_primary
 # older data neutrophiles_old
 
 # ================== Control of the workflow ==================
@@ -31,7 +31,7 @@ READSPATH: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_r
 # older data: /mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/data_raw/GSE110864
 
 ## the meta file describing the experiment settings
-METAFILE: configs/metadata_combined_sets.tsv
+METAFILE: configs/metadata_primary.tsv
 
 ## is the sequencing paired-end or single-end?
 END: single  # "pair" or "single"
@@ -78,11 +78,11 @@ alignmentQC: no  # "yes" or "no" to specify whether you want to do alignment QC
 DEATOOL: DESeq2  # "edgeR" or "DESeq2"? DESeq2 is recommended for transcriptome-based and DEA
 
 ## Is your experiment designed in a pair-wise way?
-PAIR: FALSE  # Is this a pair test or not? ("TRUE" or "FALSE")
+PAIR: TRUE  # Is this a pair test or not? ("TRUE" or "FALSE")
 
 ## the comparison(s) you want to do. If multiple comparisons, specify each pair (CONTROL & TREAT) in order respectively
-CONTROL: ["Hox-WT", "Hox-WT", "Hox-WT", "Prim-WT", "Hox-KO_v2", "Hox-WT", "Hox-KO", "Hox-WT-Ca", "Hox-WT"]
-TREAT: ["Prim-WT", "Hox-KO_v2", "Hox-2KOs", "Prim-KO", "Hox-2KOs", "Hox-WT-Ca", "Hox-KO-Ca", "Hox-KO-Ca", "Hox-KO"]
+CONTROL: ["Prim-WT-U", "Prim-WT-U", "Prim-WT-Ca"]
+TREAT: ["Prim-KO-U", "Prim-WT-Ca", "Prim-KO-U"]
 ## length of 'CONTROL' should agree with that of 'TREAT'
 ## what you fill in there should agree with the "group" column in metadata.tsv
 

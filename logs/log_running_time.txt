@@ -456,3 +456,31 @@ Time of running transcripts quantification:0:48:48
 Time of running DEA transcriptome based:0:10:53
 Time of running visualization:0:06:53
 Finish time: Wed Jan 12 17:56:29 2022
+
+Project name: neutrophiles_primary
+Start time: Thu Oct 27 12:50:38 2022
+Time of running transcripts quantification:0:02:26
+Time of running DEA transcriptome based:0:00:00
+Time of running visualization:0:00:00
+Finish time: Thu Oct 27 12:53:06 2022
+
+Project name: neutrophiles_primary
+Start time: Thu Oct 27 12:58:49 2022
+Time of running transcripts quantification:0:00:00
+Time of running DEA transcriptome based:0:00:00
+Time of running visualization:0:00:00
+Finish time: Thu Oct 27 12:58:50 2022
+
+Project name: neutrophiles_primary
+Start time: Thu Oct 27 14:02:30 2022
+Time of running transcripts quantification:1:24:37
+Time of running DEA transcriptome based:0:01:43
+Time of running visualization:0:00:00
+Finish time: Thu Oct 27 15:28:52 2022
+
+Project name: neutrophiles_primary
+Start time: Fri Oct 28 08:55:24 2022
+Time of running transcripts quantification:0:00:02
+Time of running DEA transcriptome based:0:02:21
+Time of running visualization:0:00:00
+Finish time: Fri Oct 28 08:57:49 2022
