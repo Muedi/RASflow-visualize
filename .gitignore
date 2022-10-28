@@ -16,3 +16,4 @@ degs-*.csv
 test.csv
 Rplots.pdf
 .RData
+logs/*.txt
