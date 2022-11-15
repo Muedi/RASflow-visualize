@@ -171,7 +171,7 @@ percentage <- paste( colnames(df_out), "(", paste( as.character(percentage), "%"
 p<-ggplot(df_out,aes(x=PC1,
                     y=PC2,
                     color=group,
-                    shape=treat,
+                    # shape=treat,
                     label=substring(rownames(df_out), 1, 10) )) + 
       geom_point() + 
       geom_label_repel(hjust="inward", nudge_y = - 20000, max.overlaps=60) +
@@ -192,7 +192,7 @@ topVarGenes <- head(order(rowVars(as.matrix(joined_table %>% column_to_rownames(
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -218,7 +218,7 @@ topVarGenes <- head(order(rowVars(as.matrix(joined_table %>% column_to_rownames(
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -242,10 +242,15 @@ pheatmap(mat,
           main="Top 1000 Genes, lengthScaledTPM normalized by rowMeans, quantile breaks in color scheme") 
 dev.off() 
 
-old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
+# old_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/mRNA_Hoxis_naiive_Ca_clusters_genelist_JF.xlsx", 1, startRow = 2)
 
-clust_genes <- old_expression_clusters[c("Cluster", "Name")]
-clust_genes <- clust_genes[clust_genes$Cluster != "none",]
+# clust_genes <- old_expression_clusters[c("Cluster", "Name")]
+# clust_genes <- clust_genes[clust_genes$Cluster != "none",]
+
+ets2_expression_clusters <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/WT_crETS2_Down_HA.xlsx", 1, startRow = 1)
+
+clust_genes <- ets2_expression_clusters[["symbol"]]
+
 
 # # avergae expression of all samples/groups
 # exp.plot <- joined_table %>% gather(key="sample", value="value", -ensembl) %>% 
@@ -295,7 +300,7 @@ zscores.old$Symbol <- convert.id2symbol(zscores.old$ensembl)
 #     theme_minimal()
 # ggsave(filename = file.path(out.path, 'avg_expression_sample.png'))
 # Cluster I
-exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I","Name"]) %>%
+exp.plot <- zscores %>% filter(Symbol %in% clust_genes) %>%
     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
     mutate(sample=as.factor(sample)) %>% 
@@ -306,105 +311,119 @@ exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I
     ) +
     coord_flip() +
     theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustI.png'))
+ggsave(filename = file.path(out.path, 'avg_expression_score_clust_Hoxis.png'))
 
-# Cluster II
-exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "II","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=group)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustII.png'))
+# # Cluster I
+# exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=group)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustI.png'))
 
-# Cluster III
-exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "III","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=group)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustIII.png'))
+# # Cluster II
+# exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "II","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=group)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustII.png'))
 
-# Cluster IV
-exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "IV","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=group)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.png'))
-# old data plotted 
-# Cluster I
-exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=subject)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustI.old.png'))
+# # Cluster III
+# exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "III","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=group)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustIII.png'))
 
-# Cluster II
-exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "II","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=subject)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustII.old.png'))
+# # Cluster IV
+# exp.plot <- zscores %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "IV","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data %>% dplyr::select(sample, group), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=group)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.png'))
+# # old data plotted 
+# # Cluster I
+# exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "I","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=subject)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustI.old.png'))
 
-# Cluster III
-exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "III","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=subject)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustIII.old.png'))
+# # Cluster II
+# exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "II","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=subject)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustII.old.png'))
 
-# Cluster IV
-exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "IV","Name"]) %>%
-    gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
-    left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
-    mutate(sample=as.factor(sample)) %>% 
-    ggplot(aes(x=value, y=group, color=subject)) + 
-    geom_boxplot() +
-    labs(title="Avg. Gene Expression in groups",
-         x="Z-score", y="Group"
-    ) +
-    coord_flip() +
-    theme_minimal()
-ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.old.png'))
+# # Cluster III
+# exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "III","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=subject)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustIII.old.png'))
+
+# # Cluster IV
+# exp.plot <- zscores.old %>% filter(Symbol %in% clust_genes[clust_genes$Cluster == "IV","Name"]) %>%
+#     gather(key="sample", value="value", c(-Symbol, -ensembl)) %>% 
+#     left_join(meta.data.old %>% dplyr::select(sample, group, subject), by="sample") %>% 
+#     mutate(sample=as.factor(sample)) %>% 
+#     ggplot(aes(x=value, y=group, color=subject)) + 
+#     geom_boxplot() +
+#     labs(title="Avg. Gene Expression in groups",
+#          x="Z-score", y="Group"
+#     ) +
+#     coord_flip() +
+#     theme_minimal()
+# ggsave(filename = file.path(out.path, 'avg_expression_score_clustIV.old.png'))
 
 # comparison to proteomics expression
 diff_express_protein_prot <- read.xlsx("/mnt/c/Users/masprang/Desktop/Projects/Neutrophil-PU.1-project/DEPs_pathway_PU1_BM_neutros_HA.xlsx", 1)
@@ -444,7 +463,7 @@ for (i in 1:length(controls)) {
 
   subject <- factor(subject.all[c(which(group.all == control), which(group.all == treat))])
   group <- relevel(factor(group.all[c(which(group.all == control), which(group.all == treat))]), ref = control)
-  colData = data.frame(samples, subject, group)
+  colData = data.frame(samples, group)
   design <- model.matrix(~group)
   dds <- DESeqDataSetFromTximport(txi, colData = colData, design = design)
 
@@ -634,7 +653,7 @@ for (i in 1:length(controls)) {
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% filter(group %in% c(control, treat)) %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+  group.anno <- meta.data %>% filter(group %in% c(control, treat)) %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
   # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
   png(file = file.path(out.path, paste('top100_degs',control, treat ,'heatmap.png', sep='_')),width=3300, height=3600, res=300)
@@ -713,7 +732,7 @@ heatmap_input <- heatmap_input[order(heatmap_input$combination),]
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -740,7 +759,7 @@ dev.off()
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -793,7 +812,7 @@ heatmap_input <- heatmap_input[order(heatmap_input$combination),]
   sym.str <- convert.id2symbol(ens.str)
   sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
   rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
   anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
@@ -840,7 +859,7 @@ sym.str <- heatmap_input$symbol
 sym.str[is.na(sym.str)] <- heatmap_input$ensembl
 sym.str <- make.unique(sym.str)
 rownames(mat) <- sym.str
-group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
 anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 png(file = file.path(out.path, 'degs-wt-combis-heatmap_all_samples_top1500.png'),width=3300, height=3600, res=300,  title = 'top genes by variance')
@@ -897,7 +916,7 @@ sym.str <- heatmap_input$symbol
 sym.str[is.na(sym.str)] <- heatmap_input$ensembl
 sym.str <- make.unique(sym.str)
 rownames(mat) <- sym.str
-group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group", "subject")
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group") #, "subject")
 anno.genes <- clust_genes %>% as_tibble() %>% column_to_rownames("Name") 
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 png(file = file.path(out.path, 'degs-old-clusters-heatmap_all_samples_top1500.png'),width=3300, height=3600, res=300,  title = 'Old cluster genes')
