@@ -17,7 +17,7 @@ library(EnhancedVolcano)
 library(openxlsx)
 library(fgsea)
 library(data.table)                 
-
+library(ComplexHeatmap)
 
 norm.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_primary/trans/dea/countGroup"
 dea.path <- "/home/max/projects/NGS/neutrophiles/RASflow/output/neutrophiles_primary/trans/dea/DEA/gene-level"
