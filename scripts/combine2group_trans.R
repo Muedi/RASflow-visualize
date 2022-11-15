@@ -138,4 +138,3 @@ for (group in unique(group.all)) {
     write.table(group.count.gene.tpm, output.file.gene.norm, sep = '\t', quote = FALSE, row.names = TRUE, col.names = TRUE)
   }
 }
-

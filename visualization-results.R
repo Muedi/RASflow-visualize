@@ -705,7 +705,6 @@ joined_table <- joined_table %>% mutate(symbol = sym.str)
 write.xlsx(joined_table, file=file.path(out.path, "master.table.xlsx"), row.names=F, overwrite=T)
 
 tpm <- joined_table[c(samples.all, "ensembl", "symbol")]
-
 heatmap_input <- tpm %>% filter(ensembl %in% combined_degs$ensembl)
 combis <- combined_degs %>% filter(ensembl %in% heatmap_input$ensembl) %>% dplyr::select(combination)
 combined_degs$symbol <- convert.id2symbol(combined_degs$ensembl)
@@ -719,20 +718,20 @@ x <- distinct_ensembl %>% dplyr::select("combination", "ensembl")
 heatmap_input <- heatmap_input %>% left_join(x, by="ensembl")
 heatmap_input <- heatmap_input[order(heatmap_input$combination),]
 # heatmap of gene expression
-  mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select(-symbol, -combination) 
-  #mat  <- mat - rowMeans(mat)
-  # annotate mat
-  ens.str <- rownames(mat)
-  # sym.str <- mapIds(org.Mm.eg.db,
-  #                   keys=ens.str,
-  #                   column="SYMBOL",
-  #                   keytype="ENSEMBL",
-  #                   multivals="first")
-  sym.str <- convert.id2symbol(ens.str)
-  sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
-  rownames(mat) <- sym.str
-  group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
-  anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
+mat  <- heatmap_input %>% column_to_rownames("ensembl") %>% dplyr::select(-symbol, -combination) 
+#mat  <- mat - rowMeans(mat)
+# annotate mat
+ens.str <- rownames(mat)
+# sym.str <- mapIds(org.Mm.eg.db,
+#                   keys=ens.str,
+#                   column="SYMBOL",
+#                   keytype="ENSEMBL",
+#                   multivals="first")
+sym.str <- convert.id2symbol(ens.str)
+sym.str[is.na(sym.str)] <- names(sym.str[is.na(sym.str)])  
+rownames(mat) <- sym.str
+group.anno <- meta.data %>% column_to_rownames("sample") %>% dplyr::select("group")
+anno.genes <- distinct_ensembl %>% column_to_rownames("symbol") %>% dplyr::select("combination")
 # mat_breaks <- seq(min(mat), max(mat), length.out = 10)
 
 png(file = file.path(out.path, 'degs-all-combis-heatmap_all_samples.png'),width=3300, height=3600, res=300)
